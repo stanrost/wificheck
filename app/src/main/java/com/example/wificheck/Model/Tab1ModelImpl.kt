@@ -25,7 +25,7 @@ class Tab1ModelImpl(view: Tab1View) : Tab1Model{
             val locName = cursor.getString(1)
             val locLong = cursor.getDouble(2)
             val locLat = cursor.getDouble(3)
-            val locRad = cursor.getInt(3)
+            val locRad = cursor.getDouble(3)
             val location = Location(id, locName, locLong, locLat, locRad)
 
             locations.add(location)

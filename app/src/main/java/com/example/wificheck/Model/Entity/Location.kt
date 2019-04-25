@@ -1,6 +1,8 @@
 package com.example.wificheck.Model.Entity
 
-class Location{
+import java.io.Serializable
+
+class Location : Serializable{
 
     var id: Int = 0
         get() = field
@@ -26,20 +28,20 @@ class Location{
             field = value
         }
 
-    var radius: Int = 0
+    var radius: Double = 0.0
         get() = field
         set(value) {
             field = value
         }
 
-    constructor(name:String, long:Double, lat:Double, radius: Int) {
+    constructor(name:String, long:Double, lat:Double, radius: Double) {
         this.name = name
         longitude = long
         latitude = lat
         this.radius = radius
     }
 
-    constructor(id:Int, name:String, long:Double, lat:Double, radius: Int) {
+    constructor(id:Int, name:String, long:Double, lat:Double, radius: Double) {
         this.id = id
         this.name = name
         longitude = long

@@ -41,7 +41,7 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         fab.setOnClickListener { view ->
             if (long != null && lat != null) {
                 closeActivity()
-                var location = Location(etName.text.toString(), long!!, lat!!, 50)
+                var location = Location(etName.text.toString(), long!!, lat!!, 50.0)
                 saveLocation(location)
             }
         }
@@ -80,7 +80,6 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
             addMarker(it)
         }
 
-        // Add a marker in Sydney and move the camera
         val vianen = LatLng(51.985, 5.106)
         var zoom = 14f
         var cameraUpdate = CameraUpdateFactory.newLatLngZoom(vianen, zoom)

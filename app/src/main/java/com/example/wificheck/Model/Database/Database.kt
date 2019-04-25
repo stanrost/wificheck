@@ -20,7 +20,7 @@ class Database() {
                     LOC_NAME + " TEXT, " +
                     LOC_LONG + " DOUBLE, " +
                     LOC_LAT + " DOUBLE, " +
-                    LOC_RAD + "INT" + ")"
+                    LOC_RAD + "DOUBLE" + ")"
         }
     }
 }

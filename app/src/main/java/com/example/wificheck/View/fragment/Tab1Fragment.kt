@@ -1,6 +1,7 @@
 package com.example.wificheck.View.fragment
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.R
 
 import com.example.wificheck.Presenter.Tab1PresenterImpl
+import com.example.wificheck.View.DetailActivity
 
 
 class Tab1Fragment : Fragment(), Tab1View {
@@ -56,5 +58,14 @@ class Tab1Fragment : Fragment(), Tab1View {
         )
 
         listView.setAdapter(arrayAdapter)
+        listView.setOnItemClickListener { parent, view, position, id ->
+
+            var intent = Intent(globalContext, DetailActivity::class.java )
+            intent.putExtra("location", locations[position])
+
+            startActivity(intent)
+
+
+        }
     }
 }
