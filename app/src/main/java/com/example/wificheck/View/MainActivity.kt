@@ -1,13 +1,16 @@
 package com.example.wificheck.View
 
+import android.content.Intent
 import android.support.design.widget.TabLayout
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
 import android.support.v4.view.ViewPager
 import com.example.wificheck.*
+import com.example.wificheck.Model.Database.DatabaseHelper.Companion.DATABASE_NAME
+import com.example.wificheck.View.fragment.Tab1Fragment
+import com.example.wificheck.View.fragment.Tab2Fragment
+import com.example.wificheck.View.fragment.Tab3Fragment
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), MainView{
@@ -20,6 +23,8 @@ class MainActivity : AppCompatActivity(), MainView{
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //this.deleteDatabase(DATABASE_NAME);
+
         mSectionsPagerAdapter = SectionsPageAdapter(supportFragmentManager)
         mViewPager = findViewById(R.id.container)
         var tabLayout = findViewById<TabLayout>(R.id.tabs)
@@ -28,10 +33,9 @@ class MainActivity : AppCompatActivity(), MainView{
 
 
         fab.setOnClickListener { view ->
+            openAddActivity()
         }
     }
-
-
 
     private fun setupViewPager(viewPager:ViewPager){
         var adapter = SectionsPageAdapter(supportFragmentManager)
@@ -41,6 +45,10 @@ class MainActivity : AppCompatActivity(), MainView{
         viewPager.setAdapter(adapter)
     }
 
+    override fun openAddActivity() {
+        intent = Intent(this, AddActivity::class.java)
+        startActivity(intent)
+    }
 
 
 }
