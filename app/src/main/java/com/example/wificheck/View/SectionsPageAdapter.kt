@@ -1,4 +1,4 @@
-package com.example.wificheck
+package com.example.wificheck.View
 
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
