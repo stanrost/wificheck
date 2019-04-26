@@ -1,12 +1,12 @@
 package com.example.wificheck.Presenter
 
 import android.content.Context
-import com.example.wificheck.Model.AddModelImpl
 import com.example.wificheck.Model.Entity.Location
+import com.example.wificheck.Model.service.LocationServiceImpl
 
 class AddPresenterImpl : AddPresenter{
     override fun addLocation(context: Context, location: Location) {
-        AddModelImpl().addLocation(context, location)
+        LocationServiceImpl(context).addLocation(location)
     }
 
 

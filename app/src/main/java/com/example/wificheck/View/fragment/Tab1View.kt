@@ -1,9 +1,10 @@
 package com.example.wificheck.View.fragment
 
-import android.view.View
-import com.example.wificheck.Model.Entity.Location
+import android.content.Context
 
 interface Tab1View {
 
-    fun setListView(locations:ArrayList<Location>, view: View)
+    fun setListView(locationNames:ArrayList<String>)
+
+    fun goToDetailPage(id:Int, context:Context)
 }

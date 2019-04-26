@@ -15,15 +15,15 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context,
     }
 
     override fun onUpgrade(sqLiteDatabase: SQLiteDatabase, i: Int, i1: Int) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + Database.Location.LOCATION)
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + Database.Location.LOC)
 
         onCreate(sqLiteDatabase)
     }
 
     companion object {
 
-        private val DATABASE_VERSION = 1
-        val DATABASE_NAME = "database"
+        private val DATABASE_VERSION = 2
+        val DATABASE_NAME = "databasev3.2"
     }
 
 }

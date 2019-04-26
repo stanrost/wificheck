@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.view.ViewPager
 import com.example.wificheck.*
-import com.example.wificheck.Model.Database.DatabaseHelper.Companion.DATABASE_NAME
 import com.example.wificheck.View.fragment.Tab1Fragment
 import com.example.wificheck.View.fragment.Tab2Fragment
 import com.example.wificheck.View.fragment.Tab3Fragment

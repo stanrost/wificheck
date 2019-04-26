@@ -9,28 +9,32 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.R
 
 import com.example.wificheck.Presenter.Tab1PresenterImpl
 import com.example.wificheck.View.DetailActivity
+import com.example.wificheck.View.MainActivity
+import kotlinx.android.synthetic.main.tab1_list_fragment.*
+import kotlinx.android.synthetic.main.tab1_list_fragment.view.*
 
 
 class Tab1Fragment : Fragment(), Tab1View {
 
     lateinit var listView: ListView
-    private lateinit var tablePresenterImpl: Tab1PresenterImpl
+    private lateinit var tab1PresenterImpl: Tab1PresenterImpl
     lateinit var globalContext: Context
-    lateinit var globalView : View
+    lateinit var globalView: View
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.tab1_list_fragment, container, false)
 
         globalView = view
         globalContext = view.context
+        listView = view.lv_locations
 
-        tablePresenterImpl = Tab1PresenterImpl(this)
-        tablePresenterImpl.getLocations(view.context, view)
+        tab1PresenterImpl = Tab1PresenterImpl(this)
+        tab1PresenterImpl.getLocationNames(view.context)
+
 
         return view
     }
@@ -38,34 +42,28 @@ class Tab1Fragment : Fragment(), Tab1View {
 
     override fun onResume() {
         super.onResume()
-        tablePresenterImpl.getLocations(globalContext, globalView)
+        tab1PresenterImpl.getLocationNames(globalContext)
+        listView = globalView.lv_locations
 
     }
 
-    override fun setListView(locations: ArrayList<Location>, view:View) {
-
-        var strings = ArrayList<String>()
-        listView = view.findViewById(R.id.lv_locations)
-
-        for (location in locations){
-            strings.add(location.name)
-        }
+    override fun setListView(locationNames: ArrayList<String>) {
 
         var arrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
             activity,
             android.R.layout.simple_list_item_1,
-            strings
+            locationNames
         )
 
         listView.setAdapter(arrayAdapter)
         listView.setOnItemClickListener { parent, view, position, id ->
-
-            var intent = Intent(globalContext, DetailActivity::class.java )
-            intent.putExtra("location", locations[position])
-
-            startActivity(intent)
-
-
+            tab1PresenterImpl.goToDetailPage(position)
         }
+    }
+
+    override fun goToDetailPage(id: Int, context: Context) {
+        var intent = Intent(context, DetailActivity::class.java)
+        intent.putExtra("ID", id)
+        startActivity(intent)
     }
 }
