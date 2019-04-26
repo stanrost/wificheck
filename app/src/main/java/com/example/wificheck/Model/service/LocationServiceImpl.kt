@@ -4,12 +4,10 @@ import android.content.Context
 import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Model.repository.LocationRepositoryImpl
 
-class LocationServiceImpl(context: Context) : LocationService{
-
-    var context = context
+class LocationServiceImpl(var context: Context) : LocationService{
 
     override fun getNamesAndIds ():ArrayList<Pair<String, Int>>{
-        var pairs : ArrayList<Pair<String, Int>> = ArrayList<Pair<String, Int>>()
+        val pairs : ArrayList<Pair<String, Int>> = ArrayList<Pair<String, Int>>()
 
         for (location in LocationRepositoryImpl().getLocation(context)){
             pairs.add(Pair(location.name, location.id))

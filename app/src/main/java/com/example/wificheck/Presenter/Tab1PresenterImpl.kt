@@ -4,20 +4,16 @@ import android.content.Context
 import com.example.wificheck.Model.service.LocationServiceImpl
 import com.example.wificheck.View.fragment.Tab1View
 
-class Tab1PresenterImpl(view: Tab1View) : Tab1Presenter{
+class Tab1PresenterImpl(var view: Tab1View, context: Context) : Tab1Presenter{
 
 
-
-    var view: Tab1View = view
     lateinit var pairs: ArrayList<Pair<String, Int>>
-    lateinit var globalContext:Context
+    val globalContext:Context = context
 
-    override fun getLocationNames(context: Context) {
+    override fun getLocationNames() {
 
-        globalContext =context
-        pairs = LocationServiceImpl(context).getNamesAndIds()
-
-        var names = ArrayList<String>()
+        pairs = LocationServiceImpl(globalContext).getNamesAndIds()
+        val names = ArrayList<String>()
 
         for ((name, id) in pairs){
             names.add(name)
@@ -29,8 +25,7 @@ class Tab1PresenterImpl(view: Tab1View) : Tab1Presenter{
 
     override fun goToDetailPage(index: Int) {
 
-        var (name, id) = pairs[index]
-
+        val (name, id) = pairs[index]
         view.goToDetailPage(id, globalContext)
     }
 }

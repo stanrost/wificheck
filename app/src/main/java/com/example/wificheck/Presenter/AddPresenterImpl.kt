@@ -8,6 +8,4 @@ class AddPresenterImpl : AddPresenter{
     override fun addLocation(context: Context, location: Location) {
         LocationServiceImpl(context).addLocation(location)
     }
-
-
 }

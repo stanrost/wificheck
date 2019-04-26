@@ -4,9 +4,7 @@ import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Model.service.LocationServiceImpl
 import com.example.wificheck.View.DetailActivity
 
-class DetailPresenterImpl(view: DetailActivity) :DetailPresenter {
-
-    val view = view
+class DetailPresenterImpl(val view: DetailActivity) :DetailPresenter {
 
     override fun getLocationById(id:Int){
 

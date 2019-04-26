@@ -13,8 +13,6 @@ import com.example.wificheck.R
 
 import com.example.wificheck.Presenter.Tab1PresenterImpl
 import com.example.wificheck.View.DetailActivity
-import com.example.wificheck.View.MainActivity
-import kotlinx.android.synthetic.main.tab1_list_fragment.*
 import kotlinx.android.synthetic.main.tab1_list_fragment.view.*
 
 
@@ -32,25 +30,22 @@ class Tab1Fragment : Fragment(), Tab1View {
         globalContext = view.context
         listView = view.lv_locations
 
-        tab1PresenterImpl = Tab1PresenterImpl(this)
-        tab1PresenterImpl.getLocationNames(view.context)
-
-
+        tab1PresenterImpl = Tab1PresenterImpl(this, view.context)
+        tab1PresenterImpl.getLocationNames()
         return view
     }
 
-
     override fun onResume() {
         super.onResume()
-        tab1PresenterImpl.getLocationNames(globalContext)
+        tab1PresenterImpl.getLocationNames()
         listView = globalView.lv_locations
 
     }
 
     override fun setListView(locationNames: ArrayList<String>) {
 
-        var arrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
-            activity,
+        val arrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
+            context!!,
             android.R.layout.simple_list_item_1,
             locationNames
         )
@@ -62,7 +57,7 @@ class Tab1Fragment : Fragment(), Tab1View {
     }
 
     override fun goToDetailPage(id: Int, context: Context) {
-        var intent = Intent(context, DetailActivity::class.java)
+        val intent = Intent(context, DetailActivity::class.java)
         intent.putExtra("ID", id)
         startActivity(intent)
     }

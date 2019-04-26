@@ -1,7 +1,11 @@
 package com.example.wificheck.View
 
+import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity;
 import android.widget.SeekBar
 import com.example.wificheck.Model.Entity.Location
@@ -18,11 +22,33 @@ import kotlinx.android.synthetic.main.activity_add.*
 class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-    private lateinit var mapsView :MapView
-    var lat : Double? = null
-    var long : Double? = null
+    private lateinit var mapsView: MapView
+    var lat: Double? = null
+    var long: Double? = null
+
     private var locationMarker: Marker? = null
     private var geoFenceLimits: Circle? = null
+    var setCurrentMarker = false
+
+
+    private var locationManager: LocationManager? = null
+    private var mLastLocation: android.location.Location? = null
+
+
+    private val locationListener: LocationListener = object : LocationListener {
+        override fun onLocationChanged(location: android.location.Location?) {
+            mLastLocation = location
+            if (!setCurrentMarker) {
+                setCurrentMarker = true
+                setCurrentLocationMarker(LatLng(location!!.latitude, location!!.longitude))
+            }
+        }
+
+        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+        override fun onProviderEnabled(provider: String?) {}
+        override fun onProviderDisabled(provider: String?) {}
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +59,7 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         mapsView.onCreate(savedInstanceState)
         mapsView.getMapAsync(this)
 
-        var radius:Double = 0.0
+        var radius: Double = 0.0
 
         sb_radius.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
 
@@ -43,28 +69,26 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
-
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {
-
             }
         })
 
-        var etName = et_name
+        val etName = et_name
 
         fab.setOnClickListener { view ->
             if (long != null && lat != null) {
                 closeActivity()
-                var location = Location(etName.text.toString(), long!!, lat!!, radius)
+                val location = Location(etName.text.toString(), long!!, lat!!, radius)
                 saveLocation(location)
             }
         }
     }
 
-    fun addCircle(radius:Double){
+    fun addCircle(radius: Double) {
 
-        if(geoFenceLimits != null){
+        if (geoFenceLimits != null) {
             geoFenceLimits!!.remove()
         }
         val circleOptions = CircleOptions()
@@ -72,19 +96,19 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
             .strokeColor(Color.argb(50, 70, 70, 70))
             .fillColor(Color.argb(100, 150, 150, 150))
             .radius(radius)
-        geoFenceLimits = mMap!!.addCircle(circleOptions)
+        geoFenceLimits = mMap.addCircle(circleOptions)
 
     }
 
-    fun closeActivity(){
+    fun closeActivity() {
         finish()
     }
 
-    fun saveLocation(location: Location){
+    fun saveLocation(location: Location) {
         AddPresenterImpl().addLocation(this, location)
     }
 
-    fun addMarker(latLng: LatLng){
+    fun addMarker(latLng: LatLng) {
         long = latLng.longitude
         lat = latLng.latitude
 
@@ -98,10 +122,35 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         if (locationMarker != null) {
             locationMarker!!.remove()
         }
-        var zoom = 18f
-        var cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
-        mMap!!.animateCamera(cameraUpdate)
-        locationMarker = mMap!!.addMarker(markerOptions)
+        val zoom = 18f
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
+        mMap.animateCamera(cameraUpdate)
+        locationMarker = mMap.addMarker(markerOptions)
+
+    }
+
+    fun checkPermission(): Boolean {
+        return (ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED)
+    }
+
+    fun setCurrentLocationMarker(latLng: LatLng) {
+
+        val markerOptions = MarkerOptions()
+
+        markerOptions.position(latLng)
+        markerOptions.title("" + latLng.latitude + " : " + latLng.longitude)
+
+        if (locationMarker != null) {
+            locationMarker!!.remove()
+        }
+
+        locationMarker = mMap.addMarker(markerOptions)
+        val zoom = 18f
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
+        mMap.animateCamera(cameraUpdate)
 
     }
 
@@ -110,12 +159,14 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         mMap.setOnMapClickListener {
             addMarker(it)
         }
-
-        val vianen = LatLng(51.985, 5.106)
-        var zoom = 14f
-        var cameraUpdate = CameraUpdateFactory.newLatLngZoom(vianen, zoom)
-        mMap!!.animateCamera(cameraUpdate)
         mapsView.onResume()
+
+        if (checkPermission()) {
+            locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
+            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, locationListener)
+            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, locationListener)
+
+        }
     }
 
 }

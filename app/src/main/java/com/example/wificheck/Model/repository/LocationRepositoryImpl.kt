@@ -1,5 +1,6 @@
 package com.example.wificheck.Model.repository
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import com.example.wificheck.Model.Database.Database
@@ -10,14 +11,15 @@ import com.example.wificheck.Model.Entity.Location
 class LocationRepositoryImpl : LocationRepository{
 
 
+    @SuppressLint("Recycle")
     override fun getLocation(context: Context):ArrayList<Location> {
 
         val selectQuery = "SELECT * FROM LOCATION"
-        var locations : ArrayList<Location> = ArrayList<Location>()
+        val locations : ArrayList<Location> = ArrayList<Location>()
         val dbHelper = DatabaseHelper(context)
         val db = dbHelper.readableDatabase
 
-        var cursor = db.rawQuery(selectQuery, null)
+        val cursor = db.rawQuery(selectQuery, null)
 
         cursor.moveToFirst()
         while (!cursor.isAfterLast) {
@@ -35,13 +37,14 @@ class LocationRepositoryImpl : LocationRepository{
         return locations
     }
 
+    @SuppressLint("Recycle")
     override fun getLocationById(id: Int, context: Context) :Location{
         val selectQuery = "SELECT * FROM LOCATION WHERE _ID = $id"
-        var locations : ArrayList<Location> = ArrayList<Location>()
+        val locations : ArrayList<Location> = ArrayList<Location>()
         val dbHelper = DatabaseHelper(context)
         val db = dbHelper.readableDatabase
 
-        var cursor = db.rawQuery(selectQuery, null)
+        val cursor = db.rawQuery(selectQuery, null)
 
         cursor.moveToFirst()
         while (!cursor.isAfterLast) {
