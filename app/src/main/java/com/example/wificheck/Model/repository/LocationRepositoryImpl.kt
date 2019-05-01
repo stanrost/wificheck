@@ -8,14 +8,14 @@ import com.example.wificheck.Model.Database.DatabaseHelper
 import com.example.wificheck.Model.Entity.Location
 
 
-class LocationRepositoryImpl : LocationRepository{
+class LocationRepositoryImpl : LocationRepository {
 
 
     @SuppressLint("Recycle")
-    override fun getLocation(context: Context):ArrayList<Location> {
+    override fun getLocation(context: Context): ArrayList<Location> {
 
         val selectQuery = "SELECT * FROM LOCATION"
-        val locations : ArrayList<Location> = ArrayList<Location>()
+        val locations: ArrayList<Location> = ArrayList<Location>()
         val dbHelper = DatabaseHelper(context)
         val db = dbHelper.readableDatabase
 
@@ -38,9 +38,9 @@ class LocationRepositoryImpl : LocationRepository{
     }
 
     @SuppressLint("Recycle")
-    override fun getLocationById(id: Int, context: Context) :Location{
+    override fun getLocationById(id: Int, context: Context): Location {
         val selectQuery = "SELECT * FROM LOCATION WHERE _ID = $id"
-        val locations : ArrayList<Location> = ArrayList<Location>()
+        val locations: ArrayList<Location> = ArrayList<Location>()
         val dbHelper = DatabaseHelper(context)
         val db = dbHelper.readableDatabase
 

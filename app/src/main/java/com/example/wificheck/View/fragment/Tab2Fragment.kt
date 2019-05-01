@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Presenter.Tab2PresenterImpl
 import com.example.wificheck.R
+import com.example.wificheck.View.MainActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
@@ -37,15 +38,12 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
     private var currentLocationMarker: Marker? = null
     private var locationManager: LocationManager? = null
     private var mLastLocation: android.location.Location? = null
-    var setCurrentMarker = false
+    var onLocationChange = 0
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location?) {
             mLastLocation = location
-            if (!setCurrentMarker) {
-                setCurrentMarker = true
-                setCurrentLocationMarker(LatLng(location!!.latitude, location!!.longitude))
-            }
+            setCurrentLocationMarker(LatLng(location!!.latitude, location!!.longitude))
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
@@ -68,6 +66,7 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
         return view
     }
 
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
@@ -80,7 +79,7 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
             locationManager = globalContext.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager?
             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
             locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, locationListener)
-            val loc : android.location.Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            val loc: android.location.Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             setCurrentLocationMarker(LatLng(loc!!.latitude, loc!!.longitude))
 
         }
@@ -165,9 +164,6 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
         }
 
         currentLocationMarker = mMap.addMarker(markerOptions)
-        val zoom = 18f
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
-        mMap.animateCamera(cameraUpdate)
 
     }
 }

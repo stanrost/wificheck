@@ -5,5 +5,6 @@ import com.example.wificheck.Model.Entity.Location
 
 interface AddPresenter {
 
-    fun addLocation(context: Context, location:Location)
+    fun addLocation(location:Location)
+    fun addCircle(radius: Int)
 }

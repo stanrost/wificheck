@@ -1,5 +1,8 @@
 package com.example.wificheck.View
 
+import android.annotation.SuppressLint
+import android.app.PendingIntent
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.LocationListener
@@ -11,6 +14,11 @@ import android.widget.SeekBar
 import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Presenter.AddPresenterImpl
 import com.example.wificheck.R
+import com.example.wificheck.backgroundService.GeofenceTransitionsIntentService
+import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofencingClient
+import com.google.android.gms.location.GeofencingRequest
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
@@ -25,14 +33,18 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
     private lateinit var mapsView: MapView
     var lat: Double? = null
     var long: Double? = null
+    var radius: Double? = null
 
     private var locationMarker: Marker? = null
     private var geoFenceLimits: Circle? = null
     var setCurrentMarker = false
+    lateinit var geofencingClient: GeofencingClient
 
 
     private var locationManager: LocationManager? = null
     private var mLastLocation: android.location.Location? = null
+
+    private lateinit var addPresenter: AddPresenterImpl
 
 
     private val locationListener: LocationListener = object : LocationListener {
@@ -54,18 +66,17 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add)
 
+        addPresenter = AddPresenterImpl(this, applicationContext)
 
         mapsView = findViewById<MapView>(R.id.mv_location)
         mapsView.onCreate(savedInstanceState)
         mapsView.getMapAsync(this)
 
-        var radius: Double = 0.0
-
         sb_radius.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
 
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
                 radius = i * 1.0
-                addCircle(radius)
+                addPresenter.addCircle(i)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -76,12 +87,14 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         })
 
         val etName = et_name
+        geofencingClient = LocationServices.getGeofencingClient(this)
 
         fab.setOnClickListener { view ->
             if (long != null && lat != null) {
                 closeActivity()
-                val location = Location(etName.text.toString(), long!!, lat!!, radius)
+                val location = Location(etName.text.toString(), long!!, lat!!, radius!!)
                 saveLocation(location)
+                addGeofence()
             }
         }
     }
@@ -105,7 +118,7 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
     }
 
     fun saveLocation(location: Location) {
-        AddPresenterImpl().addLocation(this, location)
+        addPresenter.addLocation(location)
     }
 
     fun addMarker(latLng: LatLng) {
@@ -122,6 +135,10 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         if (locationMarker != null) {
             locationMarker!!.remove()
         }
+        if (geoFenceLimits != null) {
+            geoFenceLimits!!.remove()
+        }
+
         val zoom = 18f
         val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
         mMap.animateCamera(cameraUpdate)
@@ -140,6 +157,9 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
 
         val markerOptions = MarkerOptions()
 
+        long = latLng.longitude
+        lat = latLng.latitude
+
         markerOptions.position(latLng)
         markerOptions.title("" + latLng.latitude + " : " + latLng.longitude)
 
@@ -154,6 +174,7 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
 
     }
 
+
     override fun onMapReady(googleMap: GoogleMap?) {
         mMap = googleMap!!
         mMap.setOnMapClickListener {
@@ -165,8 +186,48 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
             locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, locationListener)
             locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, locationListener)
+            val loc: android.location.Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            setCurrentLocationMarker(LatLng(loc!!.latitude, loc!!.longitude))
+        }
+    }
+
+    // geofence
+
+    var geofence :Geofence? = null;
+    @SuppressLint("MissingPermission")
+    fun addGeofence(){
+
+         geofence = Geofence.Builder().setRequestId(et_name.text.toString())
+            .setCircularRegion(lat!!, long!!, radius!!.toFloat())
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT).build()
+
+        geofencingClient?.addGeofences(getGeofencingRequest(), geofencePendingIntent)?.run {
+            addOnSuccessListener {
+                // Geofences added
+                // ...
+            }
+            addOnFailureListener {
+                //showSettingsPopUp()
+            }
 
         }
+    }
+
+
+    fun getGeofencingRequest(): GeofencingRequest {
+        return GeofencingRequest.Builder().apply {
+            setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            addGeofence(geofence)
+        }.build()
+    }
+
+    private val geofencePendingIntent: PendingIntent by lazy {
+        val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
+        // addGeofences() and removeGeofences().
+        PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
     }
 
 }
