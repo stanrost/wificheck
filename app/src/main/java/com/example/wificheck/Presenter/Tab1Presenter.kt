@@ -8,4 +8,5 @@ interface Tab1Presenter{
     fun getDistancesList(lat: Double, long: Double)
     fun getList(lat: Double, long: Double)
     fun setSort(sortId: Int)
+    fun changeList(text: String)
 }

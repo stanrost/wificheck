@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import android.widget.SearchView
 import android.widget.TextView
 import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Presenter.Tab1PresenterImpl
@@ -128,7 +129,22 @@ class Tab1Fragment : Fragment(), Tab1View {
 
         inflater!!.inflate(R.menu.menu_main, menu)
 
-        super.onCreateOptionsMenu(menu, inflater)
+        val searchItem = menu!!.findItem(R.id.action_search)
+
+        var searchView = searchItem!!.getActionView() as android.support.v7.widget.SearchView
+
+        searchView.setOnQueryTextListener(object : android.support.v7.widget.SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true
+            }
+            override fun onQueryTextChange(newText: String?): Boolean {
+                mTab1PresenterImpl.changeList(newText!!)
+                return true
+            }
+
+        })
+
+            super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
@@ -143,7 +159,6 @@ class Tab1Fragment : Fragment(), Tab1View {
             return true
         }
         return super.onOptionsItemSelected(item)
-
     }
 
     fun sortNearby() {

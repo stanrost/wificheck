@@ -11,18 +11,22 @@ import kotlin.collections.ArrayList
 
 class Tab1PresenterImpl(var mView: Tab1View, var mContext: Context) : Tab1Presenter {
 
+    var mLocations = ArrayList<Location>()
+
     override fun getLocations() {
-        val locations = LocationServiceImpl(mContext).getLocation()
-        mView.setListView(locations)
+        mLocations.clear()
+        mLocations = LocationServiceImpl(mContext).getLocation()
+        mView.setListView(mLocations)
     }
 
     override fun getLocationsByName() {
-        val locations = LocationServiceImpl(mContext).getLocation()
+        mLocations.clear()
+        mLocations = LocationServiceImpl(mContext).getLocation()
 
-        sort(locations, Comparator { o1: Location, o2: Location ->
+        sort(mLocations, Comparator { o1: Location, o2: Location ->
             o1.name.compareTo(o2.name)
         })
-        mView.setListView(locations)
+        mView.setListView(mLocations)
     }
 
     override fun goToDetailPage(id: Int) {
@@ -30,7 +34,6 @@ class Tab1PresenterImpl(var mView: Tab1View, var mContext: Context) : Tab1Presen
     }
 
     override fun getDistancesList(lat: Double, long: Double) {
-
         val distances = ArrayList<Pair<Location, Double>>()
 
         for (location in LocationServiceImpl(mContext).getLocation()) {
@@ -40,14 +43,14 @@ class Tab1PresenterImpl(var mView: Tab1View, var mContext: Context) : Tab1Presen
         }
 
         distances.sortBy { it.second }
-        val locationList = ArrayList<Location>()
+        mLocations.clear()
 
         for (p1 in distances) {
             val (l1, d1) = p1
-            locationList.add(l1)
+            mLocations.add(l1)
         }
 
-        mView.setListView(locationList)
+        mView.setListView(mLocations)
     }
 
     private fun distance(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
@@ -84,6 +87,16 @@ class Tab1PresenterImpl(var mView: Tab1View, var mContext: Context) : Tab1Presen
     override fun setSort(sortId: Int) {
         SharedPreferenceServiceImpl().setSort(sortId, mContext)
     }
+
+    override fun changeList(text: String){
+
+        var locations = mLocations.filter{
+            it.name.toUpperCase().contains(text.toUpperCase())
+        } as ArrayList
+
+        mView.setListView(locations)
+    }
+
 
 
 }
