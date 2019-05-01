@@ -31,6 +31,11 @@ import com.example.wificheck.View.fragment.Tab1Fragment
 
 class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsIntentService") {
 
+    val DISCRIPTION = "DESCRIPTION"
+    val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
+    val SHAREDPREFERENCES = "SharedPreferences"
+    val ACTIVE = "active"
+
     internal lateinit var notificationManager: NotificationManager
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -50,10 +55,10 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
 
         // Test that the reported transition was of interest.
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-            openNotification("You are inside wifilocation: $geofenceId")
+            openNotification(getString(R.string.inside_location) + geofenceId)
             changeWifi(true)
         } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
-            openNotification("You ar not inside a wifilocation")
+            openNotification(getString(R.string.outside_location))
             changeWifi(false)
         } else {
             // Log the error.
@@ -68,12 +73,11 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
 
 
     fun checkIfRunning(): Boolean {
-        val sp = getSharedPreferences("SharedPreferences", Context.MODE_PRIVATE)
-        var active = sp.getBoolean("active", false)
+        val sp = getSharedPreferences(SHAREDPREFERENCES, Context.MODE_PRIVATE)
+        val active = sp.getBoolean(ACTIVE, false)
 
         return active
     }
-
 
     fun openNotification(description: String) {
 
@@ -85,10 +89,10 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
             notificationManager =
                 applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            val CHANNEL_ID = "my_channel_$description"
+            val CHANNEL_ID = description
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                val name = "my_channel"
-                val Description = "This is my channel"
+                val name = ""
+                val Description = ""
                 val importance = NotificationManager.IMPORTANCE_HIGH
                 val mChannel = NotificationChannel(CHANNEL_ID, name, importance)
                 mChannel.description = Description
@@ -111,11 +115,12 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
             val resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
 
             builder.setContentIntent(resultPendingIntent)
+            builder.setAutoCancel(true)
             notificationManager.notify(NOTIFICATION_ID, builder.build())
 
         } else {
-            var intent = Intent("EVENT_SNACKBAR")
-            intent.putExtra("DESCRIPTION", description)
+            val intent = Intent(SHOW_DISCRIPTION)
+            intent.putExtra(DISCRIPTION, description)
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
         }
     }

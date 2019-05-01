@@ -16,9 +16,7 @@ class LocationServiceImpl(var context: Context) : LocationService {
     }
 
     override fun getLocationById(id: Int): Location {
-
         return LocationRepositoryImpl().getLocationById(id, context)
-
     }
 
     override fun getLocation(): ArrayList<Location> {

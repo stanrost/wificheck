@@ -1,8 +1,5 @@
 package com.example.wificheck.Presenter
 
-import android.content.Context
-import com.example.wificheck.Model.Entity.Location
-
 interface Tab1Presenter{
 
     fun getLocations()

@@ -7,7 +7,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainPresenterImpl(val view: MainActivity, val context : Context) : MainPresenter{
 
-
     override fun hideOrShowFloatingActionButton(position: Int) {
         if (position == 0) {
             view.showFloatingActionButton()
@@ -19,7 +18,6 @@ class MainPresenterImpl(val view: MainActivity, val context : Context) : MainPre
     }
 
     override fun setGeofenceLocations() {
-
         view.startGeofence(LocationServiceImpl(context).getLocation())
     }
 

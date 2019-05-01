@@ -12,7 +12,6 @@ class DetailPresenterImpl(val view: DetailActivity) : DetailPresenter {
         val name = location.name
         val radius = location.radius
         val pair: Pair<Double, Double> = Pair(location.latitude, location.longitude)
-
         view.showInformation(name, radius, pair)
     }
 }

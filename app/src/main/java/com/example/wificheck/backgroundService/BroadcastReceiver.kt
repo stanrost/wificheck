@@ -8,22 +8,25 @@ import com.example.wificheck.View.fragment.Tab1Fragment
 
 
 class BroadcastReceiver : BroadcastReceiver() {
+    val OPEN = "OPEN"
+    val CLOSE = "CLOSE"
+    val CHANGE = "CHANGE"
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val action = intent!!.action
 
-        if("Open".equals(action)){
-            var intent = Intent(context, MainActivity::class.java)
-            context!!.startActivity(intent)
+        if(OPEN.equals(action)){
+            val openIntent = Intent(context, MainActivity::class.java)
+            context!!.startActivity(openIntent)
             val closeIntent = Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
-            context!!.sendBroadcast(closeIntent)
+            context.sendBroadcast(closeIntent)
         }
-        else if("Close".equals(action)){
-            var serviceIntent = Intent(context, MyService::class.java)
+        else if(CLOSE.equals(action)){
+            val serviceIntent = Intent(context, MyService::class.java)
             context!!.stopService(serviceIntent)
         }
-        else if("change".equals(action)){
-            var serviceIntent = Intent(context, MyService::class.java)
+        else if(CHANGE.equals(action)){
+            val serviceIntent = Intent(context, MyService::class.java)
             context!!.startService(serviceIntent)
         }
     }

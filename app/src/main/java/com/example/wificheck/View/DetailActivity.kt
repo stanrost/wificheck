@@ -20,15 +20,15 @@ import kotlinx.android.synthetic.main.activity_detail.*
 class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
 
     private lateinit var mMap: GoogleMap
-    private lateinit var mapsView: MapView
-    private var locationId: Int? = null
-    private var locationRadius: Double? = null
-    private var locationLatLng: LatLng? = null
+    private lateinit var mMapsView: MapView
+    private var mLocationId: Int? = null
+    private var mLocationRadius: Double? = null
+    private var mLocationLatLng: LatLng? = null
 
 
-    private var locationMarker: Marker? = null
-    private var currentLocationMarker: Marker? = null
-    private var locationManager: LocationManager? = null
+    private var mLocationMarker: Marker? = null
+    private var mCurrentLocationMarker: Marker? = null
+    private var mLocationManager: LocationManager? = null
     private var mLastLocation: android.location.Location? = null
     var setCurrentMarker = false
 
@@ -40,7 +40,6 @@ class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
                 setCurrentMarker = true
                 setCurrentLocationMarker(LatLng(location!!.latitude, location!!.longitude))
             }
-
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
@@ -54,22 +53,21 @@ class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        locationId = intent.getSerializableExtra("ID") as Int
+        mLocationId = intent.getSerializableExtra("ID") as Int
+        mMapsView = mv_location
 
-        DetailPresenterImpl(this).getLocationById(locationId!!)
-
-        mapsView = mv_location
-        mapsView.onCreate(savedInstanceState)
-        mapsView.getMapAsync(this)
+        DetailPresenterImpl(this).getLocationById(mLocationId!!)
+        mMapsView.onCreate(savedInstanceState)
+        mMapsView.getMapAsync(this)
 
     }
 
     fun addCircle() {
         val circleOptions = CircleOptions()
-            .center(locationMarker!!.getPosition())
+            .center(mLocationMarker!!.getPosition())
             .strokeColor(Color.argb(50, 70, 70, 70))
             .fillColor(Color.argb(100, 150, 150, 150))
-            .radius(locationRadius!!)
+            .radius(mLocationRadius!!)
         mMap.addCircle(circleOptions)
     }
 
@@ -82,30 +80,31 @@ class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
 
     override fun onMapReady(googleMap: GoogleMap?) {
         mMap = googleMap!!
-
-        locationMarker = mMap.addMarker(MarkerOptions().position(locationLatLng!!))
+        mLocationMarker = mMap.addMarker(MarkerOptions().position(mLocationLatLng!!))
         val zoom = 15f
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(locationLatLng!!, zoom)
-        mMap.animateCamera(cameraUpdate)
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(mLocationLatLng!!, zoom)
 
         addCircle()
-        mapsView.onResume()
+
+        mMap.animateCamera(cameraUpdate)
+        mMapsView.onResume()
 
         if (checkPermission()) {
-            locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
-            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, locationListener)
-            val loc :Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            setCurrentLocationMarker(LatLng(loc!!.latitude, loc!!.longitude))
+            mLocationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
+            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10f, locationListener)
+            mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10f, locationListener)
+            val loc :Location? = mLocationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            setCurrentLocationMarker(LatLng(loc!!.latitude, loc.longitude))
         }
     }
 
     override fun showInformation(name: String, radius: Double, pair: Pair<Double, Double>) {
         val (lat, long) = pair
+        mLocationRadius = radius
+        mLocationLatLng = LatLng(lat, long)
 
         et_name.setText(name)
-        locationRadius = radius
-        locationLatLng = LatLng(lat, long)
+
     }
 
     fun setCurrentLocationMarker(latLng: LatLng) {
@@ -113,18 +112,17 @@ class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
         val markerOptions = MarkerOptions()
 
         markerOptions.position(latLng)
-        markerOptions.title("Current location")
+        markerOptions.title(getString(R.string.current_location))
             .icon(
                 BitmapDescriptorFactory.defaultMarker(
                     BitmapDescriptorFactory.HUE_ORANGE
                 )
             )
 
-        if (currentLocationMarker != null) {
-            currentLocationMarker!!.remove()
+        if (mCurrentLocationMarker != null) {
+            mCurrentLocationMarker!!.remove()
         }
-
-        currentLocationMarker = mMap.addMarker(markerOptions)
+        mCurrentLocationMarker = mMap.addMarker(markerOptions)
 
     }
 }

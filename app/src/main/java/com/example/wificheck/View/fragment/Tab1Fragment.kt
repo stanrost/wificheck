@@ -17,24 +17,25 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
 import com.example.wificheck.Model.Entity.Location
-import com.example.wificheck.R
-
 import com.example.wificheck.Presenter.Tab1PresenterImpl
+import com.example.wificheck.R
 import com.example.wificheck.View.DetailActivity
 import kotlinx.android.synthetic.main.tab1_list_fragment.view.*
 
-
 class Tab1Fragment : Fragment(), Tab1View {
 
-    lateinit var listView: ListView
-    private lateinit var tab1PresenterImpl: Tab1PresenterImpl
-    lateinit var globalContext: Context
-    lateinit var globalView: View
-    lateinit var receiver: BroadcastReceiver
-    lateinit var tvInside: TextView
+    val DISCRIPTION = "DESCRIPTION"
+    val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
+    val ID = "ID"
+
+    lateinit var mListView: ListView
+    private lateinit var mTab1PresenterImpl: Tab1PresenterImpl
+    lateinit var mContext: Context
+    lateinit var mView: View
+    lateinit var mBroadcastReceiver: BroadcastReceiver
+    lateinit var mTvInside: TextView
 
     private var mLastLocation: android.location.Location? = null
-    var onLocationChange = 0
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location?) {
@@ -44,56 +45,51 @@ class Tab1Fragment : Fragment(), Tab1View {
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
         override fun onProviderEnabled(provider: String?) {}
         override fun onProviderDisabled(provider: String?) {}
-
     }
-
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.tab1_list_fragment, container, false)
 
-        globalView = view
-        globalContext = view.context
-        listView = view.lv_locations
-
-        tab1PresenterImpl = Tab1PresenterImpl(this, view.context)
-        //tab1PresenterImpl.getLocations()
+        mView = view
+        mContext = view.context
+        mListView = view.lv_locations
+        mTab1PresenterImpl = Tab1PresenterImpl(this, view.context)
+        mTvInside = view.tv_inside
+        mBroadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val description = intent!!.getSerializableExtra(DISCRIPTION) as String
+                mTvInside.setText(description)
+            }
+        }
 
         if (checkPermission()) {
-            val locationManager = globalContext.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager?
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
-            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, locationListener)
+            val locationManager = mContext.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager?
+            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10f, locationListener)
+            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10f, locationListener)
             mLastLocation = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         }
 
-        tvInside = view.tv_inside
-
-        receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                var description = intent!!.getSerializableExtra("DESCRIPTION") as String
-                tvInside.setText(description)
-            }
-        }
-        LocalBroadcastManager.getInstance(globalContext).registerReceiver(receiver, IntentFilter("EVENT_SNACKBAR"));
-
-        tab1PresenterImpl.getList(mLastLocation!!.latitude, mLastLocation!!.longitude)
+        LocalBroadcastManager.getInstance(mContext)
+            .registerReceiver(mBroadcastReceiver, IntentFilter(SHOW_DISCRIPTION))
+        mTab1PresenterImpl.getList(mLastLocation!!.latitude, mLastLocation!!.longitude)
 
         return view
     }
 
     fun checkPermission(): Boolean {
         return (ContextCompat.checkSelfPermission(
-            globalContext,
+            mContext,
             android.Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED)
     }
 
     override fun onResume() {
         super.onResume()
-        //tab1PresenterImpl.getLocations()
-        //tab1PresenterImpl.getDistancesList(mLastLocation!!.latitude, mLastLocation!!.longitude)
-        listView = globalView.lv_locations
-        tvInside = globalView.tv_inside
-        LocalBroadcastManager.getInstance(globalContext).registerReceiver(receiver, IntentFilter("EVENT_SNACKBAR"));
+        mListView = mView.lv_locations
+        mTvInside = mView.tv_inside
+        mTab1PresenterImpl.getList(mLastLocation!!.latitude, mLastLocation!!.longitude)
+        LocalBroadcastManager.getInstance(mContext)
+            .registerReceiver(mBroadcastReceiver, IntentFilter(SHOW_DISCRIPTION));
     }
 
     override fun setListView(locationNames: ArrayList<Location>) {
@@ -110,15 +106,15 @@ class Tab1Fragment : Fragment(), Tab1View {
             stringlist
         )
 
-        listView.setAdapter(arrayAdapter)
-        listView.setOnItemClickListener { parent, view, position, id ->
-            tab1PresenterImpl.goToDetailPage(locationNames[position].id)
+        mListView.setAdapter(arrayAdapter)
+        mListView.setOnItemClickListener { parent, view, position, id ->
+            mTab1PresenterImpl.goToDetailPage(locationNames[position].id)
         }
     }
 
     override fun goToDetailPage(id: Int, context: Context) {
         val intent = Intent(context, DetailActivity::class.java)
-        intent.putExtra("ID", id)
+        intent.putExtra(ID, id)
         startActivity(intent)
     }
 
@@ -136,15 +132,13 @@ class Tab1Fragment : Fragment(), Tab1View {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        if(item!!.itemId == R.id.action_nearby){
+        if (item!!.itemId == R.id.action_nearby) {
             sortNearby()
             return true
-        }
-        else if (item!!.itemId == R.id.action_name){
+        } else if (item.itemId == R.id.action_name) {
             sortByName()
             return true
-        }
-        else if (item!!.itemId == R.id.action_latest){
+        } else if (item.itemId == R.id.action_latest) {
             sortLatest()
             return true
         }
@@ -152,18 +146,18 @@ class Tab1Fragment : Fragment(), Tab1View {
 
     }
 
-    fun sortNearby(){
-        tab1PresenterImpl.setSort(0)
-        tab1PresenterImpl.getDistancesList(mLastLocation!!.latitude, mLastLocation!!.longitude)
+    fun sortNearby() {
+        mTab1PresenterImpl.setSort(0)
+        mTab1PresenterImpl.getDistancesList(mLastLocation!!.latitude, mLastLocation!!.longitude)
     }
 
-    fun sortLatest(){
-        tab1PresenterImpl.setSort(1)
-        tab1PresenterImpl.getLocations()
+    fun sortLatest() {
+        mTab1PresenterImpl.setSort(1)
+        mTab1PresenterImpl.getLocations()
     }
 
-    fun sortByName(){
-        tab1PresenterImpl.setSort(2)
-        tab1PresenterImpl.getLocationsByName()
+    fun sortByName() {
+        mTab1PresenterImpl.setSort(2)
+        mTab1PresenterImpl.getLocationsByName()
     }
 }
