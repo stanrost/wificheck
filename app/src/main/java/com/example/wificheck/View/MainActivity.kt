@@ -17,6 +17,8 @@ import android.support.annotation.RequiresApi
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.example.wificheck.*
@@ -58,6 +60,8 @@ class MainActivity : AppCompatActivity(), MainView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setSupportActionBar(toolbar)
+
 
         //this.deleteDatabase(DATABASE_NAME)
         mainPresenter = MainPresenterImpl(this, applicationContext)
@@ -248,4 +252,8 @@ class MainActivity : AppCompatActivity(), MainView {
         super.onResume()
         mainView = main_content
     }
+
+
+
+
 }

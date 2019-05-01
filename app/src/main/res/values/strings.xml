@@ -3,6 +3,9 @@
     <string name="title_list">List</string>
     <string name="title_maps">Maps</string>
     <string name="title_settings">Settings</string>
+    <string name="title_sort_nearby">Sort nearby</string>
+    <string name="title_sort_name">Sort name</string>
+    <string name="title_sort_latest">Sort added</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

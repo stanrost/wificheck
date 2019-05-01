@@ -1,12 +1,14 @@
 package com.example.wificheck.Presenter
 
 import android.content.Context
-import android.location.Location
+import com.example.wificheck.Model.Entity.Location
 
 interface Tab1Presenter{
 
-    fun getLocationNames()
-
-    fun goToDetailPage(index:Int)
+    fun getLocations()
+    fun getLocationsByName()
+    fun goToDetailPage(id:Int)
     fun getDistancesList(lat: Double, long: Double)
+    fun getList(lat: Double, long: Double)
+    fun setSort(sortId: Int)
 }
