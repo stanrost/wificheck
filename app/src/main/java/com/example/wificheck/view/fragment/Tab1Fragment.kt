@@ -1,4 +1,4 @@
-package com.example.wificheck.View.fragment
+package com.example.wificheck.view.fragment
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -15,12 +15,13 @@ import android.support.v7.app.AppCompatActivity
 import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import android.widget.SearchView
 import android.widget.TextView
 import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Presenter.Tab1PresenterImpl
 import com.example.wificheck.R
-import com.example.wificheck.View.DetailActivity
+import com.example.wificheck.view.DetailActivity
+import com.example.wificheck.view.adapter.LocationAdapter
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.android.synthetic.main.tab1_list_fragment.view.*
 
 class Tab1Fragment : Fragment(), Tab1View {
@@ -35,8 +36,8 @@ class Tab1Fragment : Fragment(), Tab1View {
     lateinit var mView: View
     lateinit var mBroadcastReceiver: BroadcastReceiver
     lateinit var mTvInside: TextView
-
     private var mLastLocation: android.location.Location? = null
+    lateinit var mDescription : String
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location?) {
@@ -59,14 +60,15 @@ class Tab1Fragment : Fragment(), Tab1View {
         mBroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val description = intent!!.getSerializableExtra(DISCRIPTION) as String
+                mDescription = description
                 mTvInside.setText(description)
             }
         }
 
         if (checkPermission()) {
             val locationManager = mContext.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager?
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10f, locationListener)
-            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10f, locationListener)
+            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
+            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, locationListener)
             mLastLocation = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         }
 
@@ -88,6 +90,8 @@ class Tab1Fragment : Fragment(), Tab1View {
         super.onResume()
         mListView = mView.lv_locations
         mTvInside = mView.tv_inside
+
+//        mTvInside.setText(mDescription)
         mTab1PresenterImpl.getList(mLastLocation!!.latitude, mLastLocation!!.longitude)
         LocalBroadcastManager.getInstance(mContext)
             .registerReceiver(mBroadcastReceiver, IntentFilter(SHOW_DISCRIPTION));
@@ -101,13 +105,9 @@ class Tab1Fragment : Fragment(), Tab1View {
             stringlist.add(location.name)
         }
 
-        val arrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
-            context!!,
-            android.R.layout.simple_list_item_1,
-            stringlist
-        )
+        val locationAdapter = LocationAdapter(stringlist, context!!, mTab1PresenterImpl, locationNames, LatLng(mLastLocation!!.latitude, mLastLocation!!.longitude))
 
-        mListView.setAdapter(arrayAdapter)
+        mListView.setAdapter(locationAdapter)
         mListView.setOnItemClickListener { parent, view, position, id ->
             mTab1PresenterImpl.goToDetailPage(locationNames[position].id)
         }

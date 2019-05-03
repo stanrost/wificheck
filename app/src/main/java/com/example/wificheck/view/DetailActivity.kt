@@ -1,4 +1,4 @@
-package com.example.wificheck.View
+package com.example.wificheck.view
 
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -91,8 +91,8 @@ class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
 
         if (checkPermission()) {
             mLocationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
-            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10f, locationListener)
-            mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10f, locationListener)
+            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
+            mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, locationListener)
             val loc :Location? = mLocationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             setCurrentLocationMarker(LatLng(loc!!.latitude, loc.longitude))
         }

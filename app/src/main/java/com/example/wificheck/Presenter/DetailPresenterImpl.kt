@@ -2,7 +2,7 @@ package com.example.wificheck.Presenter
 
 import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Model.service.LocationServiceImpl
-import com.example.wificheck.View.DetailActivity
+import com.example.wificheck.view.DetailActivity
 
 class DetailPresenterImpl(val view: DetailActivity) : DetailPresenter {
 

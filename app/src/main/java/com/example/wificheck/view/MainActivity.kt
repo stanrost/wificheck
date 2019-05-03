@@ -1,4 +1,4 @@
-package com.example.wificheck.View
+package com.example.wificheck.view
 
 import android.Manifest
 import android.app.AlertDialog
@@ -19,9 +19,9 @@ import android.widget.Toast
 import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Presenter.MainPresenterImpl
 import com.example.wificheck.R
-import com.example.wificheck.View.fragment.Tab1Fragment
-import com.example.wificheck.View.fragment.Tab2Fragment
-import com.example.wificheck.View.fragment.Tab3Fragment
+import com.example.wificheck.view.fragment.Tab1Fragment
+import com.example.wificheck.view.fragment.Tab2Fragment
+import com.example.wificheck.view.fragment.Tab3Fragment
 import com.example.wificheck.backgroundService.GeofenceTransitionsIntentService
 import com.example.wificheck.backgroundService.MyService
 import com.google.android.gms.location.Geofence

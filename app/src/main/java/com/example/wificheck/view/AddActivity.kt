@@ -1,4 +1,4 @@
-package com.example.wificheck.View
+package com.example.wificheck.view
 
 import android.app.AlertDialog
 import android.app.PendingIntent
@@ -183,8 +183,8 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
 
         if (checkPermission()) {
             locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60, 10f, mLocationListener)
-            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000 * 60, 10f, mLocationListener)
+            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0 * 0, 10f, mLocationListener)
+            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0 * 0, 10f, mLocationListener)
             val loc: android.location.Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             setCurrentLocationMarker(LatLng(loc!!.latitude, loc.longitude))
         }

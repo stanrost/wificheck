@@ -1,32 +1,16 @@
 package com.example.wificheck.backgroundService
 
-import android.Manifest
-import android.content.ContentValues.TAG
 import android.graphics.Color
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.TaskStackBuilder
-import android.util.Log
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
-import android.content.pm.PackageManager
-import android.Manifest.permission
-import android.Manifest.permission.ACCESS_COARSE_LOCATION
-import android.annotation.SuppressLint
 import android.app.*
 import android.content.*
-import android.location.Criteria
-import android.location.LocationManager
 import android.net.wifi.WifiManager
-import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
-import android.widget.RemoteViews
-import android.widget.Toast
-import com.example.wificheck.BuildConfig
 import com.example.wificheck.R
-import com.example.wificheck.View.MainActivity
-import com.example.wificheck.View.fragment.Tab1Fragment
+import com.example.wificheck.view.MainActivity
 
 
 class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsIntentService") {
@@ -89,10 +73,10 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
             notificationManager =
                 applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            val CHANNEL_ID = description
+            val CHANNEL_ID = "my_channel_$description"
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                val name = ""
-                val Description = ""
+                val name = "my_channel"
+                val Description = "This is my channel"
                 val importance = NotificationManager.IMPORTANCE_HIGH
                 val mChannel = NotificationChannel(CHANNEL_ID, name, importance)
                 mChannel.description = Description
@@ -118,10 +102,17 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
             builder.setAutoCancel(true)
             notificationManager.notify(NOTIFICATION_ID, builder.build())
 
+            val intent = Intent(SHOW_DISCRIPTION)
+            intent.putExtra(DISCRIPTION, description)
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+
+
         } else {
             val intent = Intent(SHOW_DISCRIPTION)
             intent.putExtra(DISCRIPTION, description)
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+
+
         }
     }
 

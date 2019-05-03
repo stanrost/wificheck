@@ -2,8 +2,7 @@ package com.example.wificheck.Presenter
 
 import android.content.Context
 import com.example.wificheck.Model.service.LocationServiceImpl
-import com.example.wificheck.View.MainActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import com.example.wificheck.view.MainActivity
 
 class MainPresenterImpl(val view: MainActivity, val context : Context) : MainPresenter{
 

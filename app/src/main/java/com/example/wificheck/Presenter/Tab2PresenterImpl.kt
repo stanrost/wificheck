@@ -2,7 +2,7 @@ package com.example.wificheck.Presenter
 
 import android.content.Context
 import com.example.wificheck.Model.service.LocationServiceImpl
-import com.example.wificheck.View.fragment.Tab2View
+import com.example.wificheck.view.fragment.Tab2View
 
 class Tab2PresenterImpl(var view: Tab2View, var context: Context) : Tab2Presenter {
 

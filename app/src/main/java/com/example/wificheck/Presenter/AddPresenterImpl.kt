@@ -3,7 +3,7 @@ package com.example.wificheck.Presenter
 import android.content.Context
 import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Model.service.LocationServiceImpl
-import com.example.wificheck.View.AddActivity
+import com.example.wificheck.view.AddActivity
 
 class AddPresenterImpl(val view: AddActivity, val context: Context) : AddPresenter {
 

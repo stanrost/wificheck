@@ -4,7 +4,7 @@ import android.content.Context
 import com.example.wificheck.Model.Entity.Location
 import com.example.wificheck.Model.service.LocationServiceImpl
 import com.example.wificheck.Model.service.SharedPreferenceServiceImpl
-import com.example.wificheck.View.fragment.Tab1View
+import com.example.wificheck.view.fragment.Tab1View
 import java.util.Collections.sort
 import kotlin.Comparator
 import kotlin.collections.ArrayList
@@ -97,6 +97,9 @@ class Tab1PresenterImpl(var mView: Tab1View, var mContext: Context) : Tab1Presen
         mView.setListView(locations)
     }
 
-
+    override fun removeLocation(location: Location, lat: Double, long: Double) {
+        LocationServiceImpl(mContext).removeLocation(location)
+        getList(lat, long)
+    }
 
 }

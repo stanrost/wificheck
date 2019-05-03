@@ -75,4 +75,10 @@ class LocationRepositoryImpl : LocationRepository {
         db.insert(Database.Location.LOC, null, values)
         db.close()
     }
+
+    override fun removeLocation(context: Context, location: Location){
+        val dbHelper = DatabaseHelper(context)
+        val db = dbHelper.readableDatabase
+        db.delete(Database.Location.LOC, "_id = ${location.id}", null)
+    }
 }

@@ -26,4 +26,8 @@ class LocationServiceImpl(var context: Context) : LocationService {
     override fun addLocation(location: Location) {
         LocationRepositoryImpl().addLocation(context, location)
     }
+
+    override fun removeLocation(location: Location) {
+        LocationRepositoryImpl().removeLocation(context, location)
+    }
 }

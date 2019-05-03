@@ -1,4 +1,4 @@
-package com.example.wificheck.View.fragment
+package com.example.wificheck.view.fragment
 
 import android.content.Context
 import com.example.wificheck.Model.Entity.Location

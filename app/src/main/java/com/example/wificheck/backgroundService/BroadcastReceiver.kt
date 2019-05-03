@@ -3,8 +3,7 @@ package com.example.wificheck.backgroundService
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.example.wificheck.View.MainActivity
-import com.example.wificheck.View.fragment.Tab1Fragment
+import com.example.wificheck.view.MainActivity
 
 
 class BroadcastReceiver : BroadcastReceiver() {
