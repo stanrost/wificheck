@@ -6,4 +6,6 @@ interface Tab3View {
     fun setBoth()
     fun setEnteringSwitch()
     fun setLeavingSwitch()
+    fun setVibrateSwitch()
+    fun setLigthSwitch()
 }

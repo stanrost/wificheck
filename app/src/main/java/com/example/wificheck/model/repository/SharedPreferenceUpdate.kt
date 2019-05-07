@@ -1,7 +1,5 @@
 package com.example.wificheck.model.repository
 
-import android.content.Context
-
 interface SharedPreferenceUpdate{
     fun getListOrder(): Int
     fun setSort(sortId : Int)
@@ -13,4 +11,10 @@ interface SharedPreferenceUpdate{
     fun getLeavingCheck(): Boolean
     fun setInsideLocation(description: String)
     fun getInsideLocation(): String
+    fun setLightCheck(checked: Boolean)
+    fun setVibrateCheck(checked: Boolean)
+    fun getVibrateCheck(): Boolean
+    fun getLightCheck(): Boolean
+    fun setActive(active: Boolean)
+    fun getActive(): Boolean
 }

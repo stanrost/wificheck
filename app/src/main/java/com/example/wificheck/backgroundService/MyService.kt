@@ -15,23 +15,20 @@ import com.example.wificheck.R
 
 class MyService : Service() {
 
-    val OPEN = "OPEN"
-    val CLOSE = "CLOSE"
-    val DISCRIPTION = "DESCRIPTION"
-    val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
-    val ID = 1
-    val CHANNEL_ID = "01"
+    companion object {
+        private const val OPEN = "OPEN"
+        private const val CLOSE = "CLOSE"
+        private const val ID = 1
+        private const val CHANNEL_ID = "01"
+    }
 
     private val mServiceBinder = ServiceBinder()
     var mContext: Context? = null
-    var mDescription = ""
     lateinit var mBuilder: NotificationCompat.Builder
-    lateinit var mBroadcastReceiver: android.content.BroadcastReceiver
     lateinit var notificationManager: NotificationManager
 
     private val mNotification: Notification
         get() {
-
             notificationManager =
                 applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -49,14 +46,11 @@ class MyService : Service() {
             val pClose = PendingIntent.getBroadcast(this, 0, iClose, 0)
 
             mBuilder = NotificationCompat.Builder(applicationContext, CHANNEL_ID).setAutoCancel(true)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Wifi Checker is checking")
+                .setSmallIcon(R.drawable.ic_wifi)
+                .setContentTitle(getString(R.string.wifi_checker_checking))
                 .setVisibility(VISIBILITY_SECRET)
-                .addAction(R.drawable.ic_option, "close", pClose)
-                .addAction(R.drawable.ic_option, "open", pOpen)
-
-
-
+                .addAction(R.drawable.ic_option, getString(R.string.close), pClose)
+                .addAction(R.drawable.ic_option, getString(R.string.open), pOpen)
             return mBuilder.build()
         }
 

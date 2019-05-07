@@ -10,14 +10,12 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
 import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatActivity
 import android.widget.SeekBar
 import android.widget.Toast
-import com.example.wificheck.model.entity.Location
-import com.example.wificheck.presenter.AddPresenterImpl
 import com.example.wificheck.R
 import com.example.wificheck.backgroundService.GeofenceTransitionsIntentService
-import com.example.wificheck.backgroundService.MyService
+import com.example.wificheck.presenter.AddPresenterImpl
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
@@ -27,11 +25,17 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.*
-
 import kotlinx.android.synthetic.main.activity_add.*
 
 class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
 
+    companion object {
+        private const val ZOOM_16 = 16f
+        private const val ZOOM_18 = 18f
+        private const val INTERVAL:Long = 0
+        private const val DISTANCE = 0f
+
+    }
     private lateinit var mMap: GoogleMap
     private lateinit var mMapsView: MapView
     private var mLat: Double? = null
@@ -40,21 +44,21 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
     private var mLocationMarker: Marker? = null
 
     private var mGeoFenceLimits: Circle? = null
-    private var mSetCurrentMarker = false
+    private var mSetMarker = false
+    private var mUpdateView = true
     private lateinit var mGeofencingClient: GeofencingClient
-    private var mGeofence :Geofence? = null
+    private var mGeofence: Geofence? = null
 
-    private var locationManager: LocationManager? = null
+    private var mLocationManager: LocationManager? = null
     private var mLastLocation: android.location.Location? = null
-
     private lateinit var mAddPresenter: AddPresenterImpl
 
     private val mLocationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location?) {
             mLastLocation = location
-            if (!mSetCurrentMarker) {
-                mSetCurrentMarker = true
-                setCurrentLocationMarker(LatLng(location!!.latitude, location!!.longitude))
+            if(!mSetMarker) {
+                setCurrentLocationMarker(LatLng(location!!.latitude, location.longitude))
+                mUpdateView = false
             }
         }
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
@@ -73,6 +77,7 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
 
         sb_radius.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
+                mSetMarker = true
                 mRadius = i * 1.0
                 mAddPresenter.addCircle(i)
             }
@@ -81,18 +86,15 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
             override fun onStopTrackingTouch(seekBar: SeekBar) {
             }
         })
-
         val etName = et_name
         mGeofencingClient = LocationServices.getGeofencingClient(this)
 
         fab.setOnClickListener { view ->
-                mAddPresenter.addLocation(etName.text.toString(), mLong, mLat, mRadius)
+            mAddPresenter.addLocation(etName.text.toString(), mLong, mLat, mRadius)
         }
-
     }
 
     override fun addCircle(radius: Double) {
-
         if (mGeoFenceLimits != null) {
             mGeoFenceLimits!!.remove()
         }
@@ -102,12 +104,11 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
             .fillColor(Color.argb(100, 150, 150, 150))
             .radius(radius)
         mGeoFenceLimits = mMap.addCircle(circleOptions)
-
     }
 
-    override fun showError(error: String){
+    override fun showError(error: String) {
         val builder = AlertDialog.Builder(this@AddActivity)
-        builder.setTitle("Fill in everything")
+        builder.setTitle(getString(R.string.fill_everything_in))
         builder.setMessage(error)
         builder.setPositiveButton(getString(R.string.ok)) { dialog, which ->
             dialog.cancel()
@@ -120,9 +121,44 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         finish()
     }
 
-    fun addMarker(latLng: LatLng) {
+    override fun onMapReady(googleMap: GoogleMap?) {
+        mMap = googleMap!!
+        mMap.setOnMapClickListener {
+            addMarker(it)
+        }
+        mMapsView.onResume()
+        if (checkPermission()) {
+            mLocationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
+            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, INTERVAL, DISTANCE, mLocationListener)
+            mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, INTERVAL, DISTANCE, mLocationListener)
+            val loc: android.location.Location? = mLocationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            if (loc != null) {
+                setCurrentLocationMarker(LatLng(loc.latitude, loc.longitude))
+            }
+        }
+    }
+
+    override fun addGeofence() {
+        mGeofence = Geofence.Builder().setRequestId(et_name.text.toString())
+            .setCircularRegion(mLat!!, mLong!!, mRadius!!.toFloat())
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT).build()
+
+        if (checkPermission()) {
+            mGeofencingClient.addGeofences(getGeofencingRequest(), geofencePendingIntent)?.run {
+                addOnSuccessListener {
+                }
+                addOnFailureListener {
+                    showSettingsPopUp()
+                }
+            }
+        }
+    }
+
+    private fun addMarker(latLng: LatLng) {
         mLong = latLng.longitude
         mLat = latLng.latitude
+        mSetMarker = true
 
         val markerOptions = MarkerOptions()
 
@@ -138,24 +174,22 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
             mGeoFenceLimits!!.remove()
         }
 
-        val zoom = 18f
+        val zoom = ZOOM_18
         val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
         mMap.animateCamera(cameraUpdate)
         mLocationMarker = mMap.addMarker(markerOptions)
 
     }
 
-    fun checkPermission(): Boolean {
+    private fun checkPermission(): Boolean {
         return (ContextCompat.checkSelfPermission(
             this,
             android.Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED)
     }
 
-    fun setCurrentLocationMarker(latLng: LatLng) {
-
+    private fun setCurrentLocationMarker(latLng: LatLng) {
         val markerOptions = MarkerOptions()
-
         mLong = latLng.longitude
         mLat = latLng.latitude
 
@@ -167,53 +201,15 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         }
 
         mLocationMarker = mMap.addMarker(markerOptions)
-        val zoom = 16f
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
-        mMap.animateCamera(cameraUpdate)
+        val zoom = ZOOM_16
 
-    }
-
-    override fun onMapReady(googleMap: GoogleMap?) {
-        mMap = googleMap!!
-        mMap.setOnMapClickListener {
-            addMarker(it)
-        }
-        mMapsView.onResume()
-
-        if (checkPermission()) {
-            locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0 * 0, 10f, mLocationListener)
-            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0 * 0, 10f, mLocationListener)
-            val loc: android.location.Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-           if (loc != null) {
-               setCurrentLocationMarker(LatLng(loc!!.latitude, loc.longitude))
-           }
+        if(mUpdateView) {
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
+            mMap.animateCamera(cameraUpdate)
         }
     }
 
-    // mGeofence
-
-    override fun addGeofence(){
-
-         mGeofence = Geofence.Builder().setRequestId(et_name.text.toString())
-            .setCircularRegion(mLat!!, mLong!!, mRadius!!.toFloat())
-            .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT).build()
-
-        if(checkPermission()) {
-            mGeofencingClient.addGeofences(getGeofencingRequest(), geofencePendingIntent)?.run {
-                addOnSuccessListener {
-                    // ---------------- show popup
-                }
-                addOnFailureListener {
-                    showSettingsPopUp()
-                }
-
-            }
-        }
-    }
-
-    fun getGeofencingRequest(): GeofencingRequest {
+    private fun getGeofencingRequest(): GeofencingRequest {
         return GeofencingRequest.Builder().apply {
             setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
             addGeofence(mGeofence)
@@ -223,35 +219,24 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
         PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-
     }
 
-    fun showSettingsPopUp() {
+    private fun showSettingsPopUp() {
         val builder = AlertDialog.Builder(this@AddActivity)
-
-        // Set the alert dialog title
         builder.setTitle(getString(R.string.change_settings))
-        // Display a message on alert dialog
         builder.setMessage(getString(R.string.hight_accuracy))
-        // Set a positive button and its click listener on alert dialog
         builder.setPositiveButton(getString(R.string.ok)) { dialog, which ->
-            // Do something when user press the positive button
             goToSettings()
-            // Change the app background color
         }
-        // Display a negative button on alert dialog
         builder.setNegativeButton(getString(R.string.cancel)) { dialog, which ->
             Toast.makeText(applicationContext, getString(R.string.not_agree), Toast.LENGTH_SHORT).show()
         }
-        // Finally, make the alert dialog using mBuilder
         val dialog: AlertDialog = builder.create()
-        // Display the alert dialog on app interface
         dialog.show()
     }
 
-    fun goToSettings() {
-        var intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+    private fun goToSettings() {
+        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         startActivity(intent)
     }
-
 }

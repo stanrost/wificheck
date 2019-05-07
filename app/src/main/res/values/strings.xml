@@ -48,8 +48,14 @@
     <!--SERVICE-->
     <string name="inside_location">You are inside wifilocation:</string>
     <string name="outside_location">You ar outside a wifilocation</string>
+
+    <string name="wifi_checker_checking">Wifi Checker is checking</string>
     <string name="open">open</string>
     <string name="close">close</string>
 
-
+    <!--ADD-->
+    <string name="fill_everything_in">Fill in everything</string>
+    <string name="add_marker_error">Add a marker</string>
+    <string name="add_name_error">Fill in name</string>
+    <string name="add_radius_error">Add a radius</string>
 </resources>

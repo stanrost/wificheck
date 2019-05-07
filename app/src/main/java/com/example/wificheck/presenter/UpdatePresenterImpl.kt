@@ -1,41 +1,44 @@
 package com.example.wificheck.presenter
 
 import android.content.Context
+import com.example.wificheck.R
 import com.example.wificheck.model.entity.Location
+import com.example.wificheck.model.repository.LocationRepository
 import com.example.wificheck.model.repository.LocationRepositoryImpl
-import com.example.wificheck.view.AddActivity
-import com.example.wificheck.view.UpdateActivity
 import com.example.wificheck.view.UpdateView
 
-class UpdatePresenterImpl(val view: UpdateView, val context: Context, val locationRepository : LocationRepositoryImpl = LocationRepositoryImpl(context) ) : UpdatePresenter {
+class UpdatePresenterImpl(
+    private val view: UpdateView,
+    private val context: Context,
+    private val locationRepository: LocationRepository = LocationRepositoryImpl(context)
+) : UpdatePresenter {
 
     override fun updateLocation(id: Int, name: String?, long: Double?, lat: Double?, radius: Double?) {
 
-        var incompleteStrings = ArrayList<String>()
+        val incompleteStrings = ArrayList<String>()
         var complete = true
 
         if (name.equals("") || name == null) {
-            incompleteStrings.add("Fill in name")
+            incompleteStrings.add(context.getString(R.string.add_name_error))
             complete = false
         }
         if (long == null || lat == null) {
-            incompleteStrings.add("Add a marker")
+            incompleteStrings.add(context.getString(R.string.add_marker_error))
             complete = false
         }
         if (radius == null || radius == 0.0) {
-            incompleteStrings.add("Add a radius")
+            incompleteStrings.add(context.getString(R.string.add_radius_error))
             complete = false
         }
 
         if (complete) {
-            var location = Location(id, name!!, long!!, lat!!, radius!!)
+            val location = Location(id, name!!, long!!, lat!!, radius!!)
             locationRepository.updateLocation(location)
             view.addGeofence()
             view.closeActivity()
         } else {
-
             var index = 0
-            var max = incompleteStrings.size
+            val max = incompleteStrings.size
             var errorString = ""
             for (string in incompleteStrings) {
                 index++
@@ -47,7 +50,6 @@ class UpdatePresenterImpl(val view: UpdateView, val context: Context, val locati
                     }
             }
             view.showError(errorString)
-
         }
     }
 

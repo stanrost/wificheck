@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.wificheck.R
 import com.example.wificheck.model.entity.Location
+import com.example.wificheck.presenter.fragment.Tab2Presenter
 import com.example.wificheck.presenter.fragment.Tab2PresenterImpl
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
@@ -21,14 +22,21 @@ import kotlinx.android.synthetic.main.tab2_maps_fragment.view.*
 
 class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
 
+    companion object {
+        private const val ZOOM_14 = 14f
+        private const val ZOOM_18 = 18f
+        private const val BOUND = 220
+        private const val INTERVAL:Long = 0
+        private const val DISTANCE = 0f
+    }
 
     var mMap: GoogleMap? = null
     var mMapsView: MapView? = null
-    private lateinit var mTab2PresenterImpl: Tab2PresenterImpl
+    private lateinit var mTab2PresenterImpl: Tab2Presenter
     lateinit var mContext: Context
     lateinit var mView: View
     lateinit var mLocationMarker: Marker
-
+    var cameraUpdate : CameraUpdate? = null
 
     private var mCurrentLocationMarker: Marker? = null
     private var mLocationManager: LocationManager? = null
@@ -37,18 +45,15 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
     private val mLocationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location?) {
             mLastLocation = location
-            setCurrentLocationMarker(LatLng(location!!.latitude, location!!.longitude))
+            setCurrentLocationMarker(LatLng(location!!.latitude, location.longitude))
         }
-
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
         override fun onProviderEnabled(provider: String?) {}
         override fun onProviderDisabled(provider: String?) {}
     }
 
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.tab2_maps_fragment, container, false)
-
         mView = view
         mContext = view.context
         mMapsView = view.mapView
@@ -57,35 +62,6 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
         mMapsView!!.getMapAsync(this)
 
         return view
-    }
-
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
-
-        mTab2PresenterImpl = Tab2PresenterImpl(this, mContext)
-       // mTab2PresenterImpl.getLocationsLatLng()
-        mMapsView!!.onResume()
-        if (checkPermission()) {
-            mLocationManager = mContext.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager?
-            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, mLocationListener)
-            mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, mLocationListener)
-            mLastLocation = mLocationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            if (mLastLocation == null){
-                mLastLocation = mLocationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-            }
-            if (mLastLocation != null) {
-                setCurrentLocationMarker(LatLng(mLastLocation!!.latitude, mLastLocation!!.longitude))
-            }
-        }
-        mTab2PresenterImpl.getLocationsLatLng()
-    }
-
-    fun checkPermission(): Boolean {
-        return (ContextCompat.checkSelfPermission(
-            mContext,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED)
     }
 
     override fun onResume() {
@@ -99,7 +75,26 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
         }
     }
 
-    var cameraUpdate : CameraUpdate? = null
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+
+        mTab2PresenterImpl = Tab2PresenterImpl(this, mContext)
+        mMapsView!!.onResume()
+        if (checkPermission()) {
+            mLocationManager = mContext.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager?
+            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, INTERVAL, DISTANCE, mLocationListener)
+            mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, INTERVAL, DISTANCE, mLocationListener)
+            mLastLocation = mLocationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            if (mLastLocation == null){
+                mLastLocation = mLocationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            }
+            if (mLastLocation != null) {
+                setCurrentLocationMarker(LatLng(mLastLocation!!.latitude, mLastLocation!!.longitude))
+            }
+        }
+        mTab2PresenterImpl.getLocationsLatLng()
+    }
+
     override fun setMarkers(locations: ArrayList<Location>) {
         mMap!!.clear()
         val latlngBuilder = LatLngBounds.Builder()
@@ -110,7 +105,7 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
             addCircle(location.radius)
         }
         val latlngBound = latlngBuilder.build()
-        cameraUpdate = CameraUpdateFactory.newLatLngBounds(latlngBound, 220)
+        cameraUpdate = CameraUpdateFactory.newLatLngBounds(latlngBound, BOUND)
 
         if (mMap != null) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -123,8 +118,7 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
         val latlong = LatLng(location.latitude, location.longitude)
         mLocationMarker = mMap!!.addMarker(MarkerOptions().position(latlong))
         addCircle(location.radius)
-        val zoom = 18f
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latlong, zoom)
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latlong, ZOOM_18)
         mMap!!.animateCamera(cameraUpdate)
     }
 
@@ -133,12 +127,18 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
         val latLng = LatLng(mLastLocation!!.latitude, mLastLocation!!.longitude)
         markerOptions.position(latLng)
         markerOptions.title("" + latLng.latitude + " : " + latLng.longitude)
-        val zoom = 14f
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_14)
         mMap!!.animateCamera(cameraUpdate)
     }
 
-    fun addCircle(radius: Double) {
+    private fun checkPermission(): Boolean {
+        return (ContextCompat.checkSelfPermission(
+            mContext,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun addCircle(radius: Double) {
         val circleOptions = CircleOptions()
             .center(mLocationMarker.getPosition())
             .strokeColor(Color.argb(50, 70, 70, 70))
@@ -147,7 +147,7 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
         mMap!!.addCircle(circleOptions)
     }
 
-    fun setCurrentLocationMarker(latLng: LatLng) {
+    private fun setCurrentLocationMarker(latLng: LatLng) {
         val markerOptions = MarkerOptions()
         markerOptions.position(latLng)
         markerOptions.title("" + latLng.latitude + " : " + latLng.longitude)
@@ -161,6 +161,4 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
         }
         mCurrentLocationMarker = mMap!!.addMarker(markerOptions)
     }
-
 }
-

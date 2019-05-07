@@ -26,7 +26,6 @@ class DetailFragment : Fragment(), OnMapReadyCallback, DetailFragmentView {
 
     private lateinit var mMap: GoogleMap
     private lateinit var mMapsView: MapView
-    private var mLocationId: Int? = null
     private var mLocationRadius: Double? = null
     private var mLocationLatLng: LatLng? = null
 
@@ -34,90 +33,67 @@ class DetailFragment : Fragment(), OnMapReadyCallback, DetailFragmentView {
     private var mLocationMarker: Marker? = null
     private var mCurrentLocationMarker: Marker? = null
     private var mLocationManager: LocationManager? = null
-    private var mLastLocation: android.location.Location? = null
-    var setCurrentMarker = false
+    private var mLastLocation: Location? = null
     lateinit var mContext: Context
     lateinit var mView: View
 
     companion object {
-        const val ARG_ITEM_ID = "item_id"
+        const val ITEM_ID = "item_id"
+        private const val ZOOM = 15f
+        private const val INTERVAL:Long = 0
+        private const val DISTANCE = 0f
     }
 
     private val locationListener: LocationListener = object : LocationListener {
 
-        override fun onLocationChanged(location: android.location.Location?) {
+        override fun onLocationChanged(location: Location?) {
             mLastLocation = location
-            setCurrentLocationMarker(LatLng(location!!.latitude, location!!.longitude))
-
+            setCurrentLocationMarker(LatLng(location!!.latitude, location.longitude))
         }
-
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
         override fun onProviderEnabled(provider: String?) {}
         override fun onProviderDisabled(provider: String?) {}
-
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        var view = inflater.inflate(R.layout.fragment_detail, container, false)
+        val view = inflater.inflate(R.layout.fragment_detail, container, false)
         mView = view
         mContext = view.context
+        mMapsView = view.mv_location_fragment
+
         var getId: Int? = null
         arguments?.let {
-            if (it.containsKey(DetailFragment.ARG_ITEM_ID)) {
-                getId = it.getInt(DetailFragment.ARG_ITEM_ID)
+            if (it.containsKey(ITEM_ID)) {
+                getId = it.getInt(ITEM_ID)
             }
         }
-
-        mMapsView = view.mv_location_fragment
 
         DetailPresenterFragmentImpl(this, mContext).getLocationById(getId!!)
         mMapsView.onCreate(savedInstanceState)
         mMapsView.getMapAsync(this)
 
-        // Inflate the layout for this fragment
         return view
-    }
-
-
-    fun addCircle() {
-        val circleOptions = CircleOptions()
-            .center(mLocationMarker!!.getPosition())
-            .strokeColor(Color.argb(50, 70, 70, 70))
-            .fillColor(Color.argb(100, 150, 150, 150))
-            .radius(mLocationRadius!!)
-        mMap.addCircle(circleOptions)
-    }
-
-    fun checkPermission(): Boolean {
-        return (ContextCompat.checkSelfPermission(
-            mContext,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED)
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
         mMap = googleMap!!
         mLocationMarker = mMap.addMarker(MarkerOptions().position(mLocationLatLng!!))
-        val zoom = 15f
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(mLocationLatLng!!, zoom)
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(mLocationLatLng!!, ZOOM)
 
         addCircle()
-
         mMap.moveCamera(cameraUpdate)
         mMapsView.onResume()
 
         if (checkPermission()) {
             mLocationManager = view!!.context.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager?
-            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
-            mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, locationListener)
+            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, INTERVAL, DISTANCE, locationListener)
+            mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, INTERVAL, DISTANCE, locationListener)
             val loc: Location? = mLocationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             if (loc != null) {
-                setCurrentLocationMarker(LatLng(loc!!.latitude, loc.longitude))
+                setCurrentLocationMarker(LatLng(loc.latitude, loc.longitude))
             }
         }
     }
@@ -126,15 +102,28 @@ class DetailFragment : Fragment(), OnMapReadyCallback, DetailFragmentView {
         val (lat, long) = pair
         mLocationRadius = radius
         mLocationLatLng = LatLng(lat, long)
-
         mView.et_name_fragment.setText(name)
-
     }
 
-    fun setCurrentLocationMarker(latLng: LatLng) {
+    private fun addCircle() {
+        val circleOptions = CircleOptions()
+            .center(mLocationMarker!!.getPosition())
+            .strokeColor(Color.argb(50, 70, 70, 70))
+            .fillColor(Color.argb(100, 150, 150, 150))
+            .radius(mLocationRadius!!)
+        mMap.addCircle(circleOptions)
+    }
+
+    private fun checkPermission(): Boolean {
+        return (ContextCompat.checkSelfPermission(
+            mContext,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun setCurrentLocationMarker(latLng: LatLng) {
 
         val markerOptions = MarkerOptions()
-
         markerOptions.position(latLng)
         markerOptions.title(getString(R.string.current_location))
             .icon(
@@ -147,8 +136,5 @@ class DetailFragment : Fragment(), OnMapReadyCallback, DetailFragmentView {
             mCurrentLocationMarker!!.remove()
         }
         mCurrentLocationMarker = mMap.addMarker(markerOptions)
-
     }
-
-
 }

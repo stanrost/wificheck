@@ -9,8 +9,6 @@ import com.example.wificheck.model.entity.Location
 
 
 class LocationRepositoryImpl(var context: Context) : LocationRepository {
-
-
     // samenvoegen van dphelper in constructor
     @SuppressLint("Recycle")
     override fun getLocation(): ArrayList<Location> {

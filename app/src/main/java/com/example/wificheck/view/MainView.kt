@@ -8,5 +8,7 @@ interface MainView {
     fun hideFloatingActionButton()
     fun openAddActivity()
     fun startGeofence(locations: ArrayList<Location>)
+    fun tabletView()
+    fun mobileView()
 
 }

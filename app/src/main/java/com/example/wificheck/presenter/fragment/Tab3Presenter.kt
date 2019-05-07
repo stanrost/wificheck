@@ -10,4 +10,8 @@ interface Tab3Presenter {
     fun setLeavingCheck(checked: Boolean)
     fun getEnteringCheck()
     fun getLeavingCheck()
+    fun setLightCheck(checked: Boolean)
+    fun setVibrateCheck(checked: Boolean)
+    fun getVibrateCheck()
+    fun getLightCheck()
 }

@@ -2,19 +2,20 @@ package com.example.wificheck.presenter.fragment
 
 import android.content.Context
 import com.example.wificheck.model.entity.Location
+import com.example.wificheck.model.repository.LocationRepository
 import com.example.wificheck.model.repository.LocationRepositoryImpl
+import com.example.wificheck.model.repository.SharedPreferenceUpdate
 import com.example.wificheck.model.repository.SharedPreferenceUpdateImpl
 import com.example.wificheck.view.fragment.Tab1View
 import java.util.Collections.sort
 
 class Tab1PresenterImpl(
-    var mView: Tab1View,
-    var mContext: Context,
-    var mLocationRepository: LocationRepositoryImpl = LocationRepositoryImpl(mContext),
-    var mSharedPreference: SharedPreferenceUpdateImpl = SharedPreferenceUpdateImpl(mContext)
+    private var mView: Tab1View,
+    private var mContext: Context,
+    private var mLocationRepository: LocationRepository = LocationRepositoryImpl(mContext),
+    private var mSharedPreference: SharedPreferenceUpdate = SharedPreferenceUpdateImpl(mContext)
 ) :
     Tab1Presenter {
-
     var mLocations = ArrayList<Location>()
 
     override fun getLocations() {
@@ -57,8 +58,41 @@ class Tab1PresenterImpl(
         mView.setListView(mLocations)
     }
 
-    private fun distance(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
+    override fun getList(lat: Double, long: Double) {
+        when {
+            SharedPreferenceUpdateImpl(mContext).getListOrder() == 0 -> getDistancesList(lat, long)
+            SharedPreferenceUpdateImpl(mContext).getListOrder() == 1 -> getLocations()
+            SharedPreferenceUpdateImpl(mContext).getListOrder() == 2 -> getLocationsByName()
+            else -> getLocationsByName()
+        }
+    }
 
+    override fun setSort(sortId: Int) {
+        SharedPreferenceUpdateImpl(mContext).setSort(sortId)
+    }
+
+    override fun changeList(text: String) {
+        val locations = mLocations.filter {
+            it.name.toUpperCase().contains(text.toUpperCase())
+        } as ArrayList
+
+        mView.setListView(locations)
+    }
+
+    override fun removeLocation(location: Location, lat: Double, long: Double) {
+        mLocationRepository.removeLocation(location)
+        getList(lat, long)
+    }
+
+    override fun setInsideLocation(description: String) {
+        mSharedPreference.setInsideLocation(description)
+    }
+
+    override fun getInsideLocation(): String {
+        return mSharedPreference.getInsideLocation()
+    }
+
+    private fun distance(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
         val earthRadius = 6371
 
         val dLat = Math.toRadians(lat2 - lat1)
@@ -74,47 +108,7 @@ class Tab1PresenterImpl(
         return earthRadius * c
     }
 
-
-    override fun getList(lat: Double, long: Double) {
-        if (SharedPreferenceUpdateImpl(mContext).getListOrder() == 0) {
-            getDistancesList(lat, long)
-        } else if (SharedPreferenceUpdateImpl(mContext).getListOrder() == 1) {
-            getLocations()
-        } else if (SharedPreferenceUpdateImpl(mContext).getListOrder() == 2) {
-            getLocationsByName()
-        } else {
-            getLocationsByName()
-        }
-    }
-
-    override fun setSort(sortId: Int) {
-        SharedPreferenceUpdateImpl(mContext).setSort(sortId)
-    }
-
-    override fun changeList(text: String) {
-
-        var locations = mLocations.filter {
-            it.name.toUpperCase().contains(text.toUpperCase())
-        } as ArrayList
-
-        mView.setListView(locations)
-    }
-
-    override fun removeLocation(location: Location, lat: Double, long: Double) {
-        mLocationRepository.removeLocation(location)
-        getList(lat, long)
-    }
-
     fun goToDetailFragment(id: Int) {
         mView.goToDetailFragment(id, mContext)
     }
-
-    override fun setInsideLocation(description: String) {
-        mSharedPreference.setInsideLocation(description)
-    }
-
-    override fun getInsideLocation(): String {
-        return mSharedPreference.getInsideLocation()
-    }
-
 }

@@ -2,15 +2,17 @@ package com.example.wificheck.presenter
 
 import android.content.Context
 import com.example.wificheck.model.entity.Location
+import com.example.wificheck.model.repository.LocationRepository
 import com.example.wificheck.model.repository.LocationRepositoryImpl
-import com.example.wificheck.view.DetailActivity
-import com.example.wificheck.view.fragment.DetailFragment
 import com.example.wificheck.view.fragment.DetailFragmentView
 
-class DetailPresenterFragmentImpl(val view: DetailFragmentView, val context: Context, val locationRepository : LocationRepositoryImpl = LocationRepositoryImpl(context)) : DetailFragmentPresenter {
+class DetailPresenterFragmentImpl(
+    private val view: DetailFragmentView,
+    private val context: Context,
+    private val locationRepository: LocationRepository = LocationRepositoryImpl(context)
+) : DetailFragmentPresenter {
 
     override fun getLocationById(id: Int) {
-
         val location: Location = locationRepository.getLocationById(id)
         val name = location.name
         val radius = location.radius

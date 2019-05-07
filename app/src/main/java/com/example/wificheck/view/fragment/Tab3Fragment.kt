@@ -9,34 +9,24 @@ import android.widget.RadioButton
 import android.widget.Switch
 import com.example.wificheck.presenter.fragment.Tab3PresenterImpl
 import com.example.wificheck.R
+import com.example.wificheck.presenter.fragment.Tab3Presenter
+import kotlinx.android.synthetic.main.tab3_settings_fragment.*
 import kotlinx.android.synthetic.main.tab3_settings_fragment.view.*
 
 class Tab3Fragment : Fragment(), Tab3View {
 
-
-    lateinit var mPresenter: Tab3PresenterImpl
+    lateinit var mPresenter: Tab3Presenter
     lateinit var mView: View
-
     lateinit var rbNotification: RadioButton
     lateinit var rbAutomatic: RadioButton
     lateinit var rbBoth: RadioButton
     lateinit var sEntering: Switch
     lateinit var sLeaving: Switch
-    var tabletView: Boolean = false
-
-    companion object {
-        /**
-         * The fragment argument representing the item ID that this fragment
-         * represents.
-         */
-        const val TABLET_VIEW = "item_id"
-    }
-
-
+    lateinit var sVibrate: Switch
+    lateinit var sLight: Switch
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.tab3_settings_fragment, container, false)
-
         mView = view
         mPresenter = Tab3PresenterImpl(this, view.context)
         rbNotification = view.rb_notification
@@ -46,10 +36,12 @@ class Tab3Fragment : Fragment(), Tab3View {
         sEntering = view.s_entering
         sLeaving = view.s_leaving
 
-        arguments?.let {
-            if (it.containsKey(Tab1Fragment.ARG_ITEM_ID)) {
-                tabletView = it.getBoolean(TABLET_VIEW)
-            }
+        sVibrate = view.s_vibrate
+        sLight = view.s_light
+
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
+            view.ll_notification.visibility = View.GONE
+            view.v_notification.visibility = View.GONE
         }
 
         sEntering.setOnCheckedChangeListener { buttonView, isChecked ->
@@ -60,9 +52,19 @@ class Tab3Fragment : Fragment(), Tab3View {
             mPresenter.setLeavingCheck(isChecked)
         }
 
+        sVibrate.setOnCheckedChangeListener { buttonView, isChecked ->
+            mPresenter.setVibrateCheck(isChecked)
+        }
+
+        sLight.setOnCheckedChangeListener { buttonView, isChecked ->
+            mPresenter.setLightCheck(isChecked)
+        }
+
         mPresenter.getChecked()
         mPresenter.getEnteringCheck()
         mPresenter.getLeavingCheck()
+        mPresenter.getVibrateCheck()
+        mPresenter.getLightCheck()
 
         rbNotification.setOnCheckedChangeListener { buttonView, isChecked ->
             mPresenter.setNotification(isChecked)
@@ -105,5 +107,13 @@ class Tab3Fragment : Fragment(), Tab3View {
 
     override fun setLeavingSwitch() {
         sLeaving.isChecked = true
+    }
+
+    override fun setVibrateSwitch() {
+        sVibrate.isChecked = true
+    }
+
+    override fun setLigthSwitch() {
+        sLight.isChecked = true
     }
 }

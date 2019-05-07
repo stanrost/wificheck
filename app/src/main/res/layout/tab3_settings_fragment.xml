@@ -98,10 +98,13 @@
         </LinearLayout>
 
     </LinearLayout>
-    <View style="@style/Divider"/>
+    <View
+            android:id="@+id/v_notification"
+            style="@style/Divider"/>
 
 
     <LinearLayout
+            android:id="@+id/ll_notification"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -127,24 +130,7 @@
                     android:text="@string/vibrate"
                     android:layout_weight="2"/>
             <Switch
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="3"/>
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin_sentence_settings"
-                android:orientation="horizontal">
-
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="#000000"
-                    android:text="@string/sound"
-                    android:layout_weight="2"/>
-            <Switch
+                    android:id="@+id/s_vibrate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="3"/>
@@ -163,6 +149,7 @@
                     android:text="@string/notification_indicator_light"
                     android:layout_weight="2"/>
             <Switch
+                    android:id="@+id/s_light"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="3"/>

@@ -11,21 +11,23 @@ import android.net.wifi.WifiManager
 import android.support.v4.content.LocalBroadcastManager
 import com.example.wificheck.model.repository.SharedPreferenceUpdateImpl
 import com.example.wificheck.R
+import com.example.wificheck.presenter.service.GoefenceTransitionPresenter
+import com.example.wificheck.presenter.service.GoefenceTransitionPresenterImpl
 import com.example.wificheck.view.MainActivity
 
 
 class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsIntentService") {
 
-    private val DISCRIPTION = "DESCRIPTION"
-    private val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
-    private val SHAREDPREFERENCES = "SharedPreferences"
-    private val ACTIVE = "active"
+    companion object{
+        private const val DISCRIPTION = "DESCRIPTION"
+        private const val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
+        private const val NOTIFICATION_ID = 234
+    }
 
     private lateinit var notificationManager: NotificationManager
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, startId, startId)
-
         return START_STICKY
     }
 
@@ -34,15 +36,13 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
         if (geofencingEvent.hasError()) {
             return
         }
-        // Get the transition type.
         val geofenceTransition = geofencingEvent.geofenceTransition
         val geofenceId = getFirstReminder(geofencingEvent.triggeringGeofences)
 
-        // Test that the reported transition was of interest.
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER && getEnteringCheck()) {
             checkAutomaticOrNotificationSettings(getString(R.string.inside_location) + geofenceId, true)
         } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT && getLeavingCheck()) {
-            checkAutomaticOrNotificationSettings("", false)
+            checkAutomaticOrNotificationSettings(getString(R.string.outside_location) + geofenceId,false)
         } else {
 
         }
@@ -70,19 +70,28 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
         return firstGeofence.requestId
     }
 
-
     private fun checkIfRunning(): Boolean {
-        val sp = getSharedPreferences(SHAREDPREFERENCES, Context.MODE_PRIVATE)
-        val active = sp.getBoolean(ACTIVE, false)
-
-        return active
+        val geofencePresenter : GoefenceTransitionPresenter = GoefenceTransitionPresenterImpl(applicationContext)
+        return geofencePresenter.getActive()
     }
 
     private fun getEnteringCheck() : Boolean{
-        return SharedPreferenceUpdateImpl(applicationContext).getEnteringCheck()
+        val geofencePresenter : GoefenceTransitionPresenter = GoefenceTransitionPresenterImpl(applicationContext)
+        return geofencePresenter.getEnteringCheck()
     }
     private fun getLeavingCheck() : Boolean{
-        return SharedPreferenceUpdateImpl(applicationContext).getLeavingCheck()
+        val geofencePresenter : GoefenceTransitionPresenter = GoefenceTransitionPresenterImpl(applicationContext)
+        return geofencePresenter.getLeavingCheck()
+    }
+
+    private fun getVibrateCheck() : Boolean{
+        val geofencePresenter : GoefenceTransitionPresenter = GoefenceTransitionPresenterImpl(applicationContext)
+        return geofencePresenter.getVibrateCheck()
+    }
+
+    private fun getLightCheck() : Boolean{
+        val geofencePresenter : GoefenceTransitionPresenter = GoefenceTransitionPresenterImpl(applicationContext)
+        return geofencePresenter.getLightCheck()
     }
 
     private fun openNotification(description: String) {
@@ -91,7 +100,6 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
         wifiManager.isWifiEnabled = true
 
         if (!checkIfRunning()) {
-            val NOTIFICATION_ID = 234
             notificationManager =
                 applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -102,9 +110,9 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
                 val importance = NotificationManager.IMPORTANCE_HIGH
                 val mChannel = NotificationChannel(CHANNEL_ID, name, importance)
                 mChannel.description = Description
-                mChannel.enableLights(true)
+                mChannel.enableLights(getLightCheck())
                 mChannel.lightColor = Color.RED
-                mChannel.enableVibration(true)
+                mChannel.enableVibration(getVibrateCheck())
                 mChannel.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
                 mChannel.setShowBadge(false)
                 notificationManager.createNotificationChannel(mChannel)

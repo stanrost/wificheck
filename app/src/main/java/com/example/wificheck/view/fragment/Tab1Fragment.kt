@@ -25,23 +25,15 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.android.synthetic.main.tab1_list_fragment.view.*
 
 class Tab1Fragment() : Fragment(), Tab1View {
-    override fun goToDetailFragment(id: Int, mContext: Context) {
-        var act = activity as MainActivity
-        act.setTabletView(id)
-    }
-
-    val DISCRIPTION = "DESCRIPTION"
-    val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
-    val ID = "ID"
 
     companion object {
-        /**
-         * The fragment argument representing the item ID that this fragment
-         * represents.
-         */
-        const val ARG_ITEM_ID = "item_id"
+        const val TABLET_VIEW = "TABLET_VIEW"
+        private const val DISCRIPTION = "DESCRIPTION"
+        private const val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
+        private const val ID = "ID"
+        private const val INTERVAL:Long = 0
+        private const val DISTANCE = 0f
     }
-
 
     lateinit var mListView: ListView
     private lateinit var mTab1PresenterImpl: Tab1PresenterImpl
@@ -80,22 +72,19 @@ class Tab1Fragment() : Fragment(), Tab1View {
                 mTvInside.text = description
             }
         }
-
         arguments?.let {
-            if (it.containsKey(ARG_ITEM_ID)) {
-                tabletView = it.getBoolean(ARG_ITEM_ID)
+            if (it.containsKey(TABLET_VIEW)) {
+                tabletView = it.getBoolean(TABLET_VIEW)
             }
         }
-
         if (checkPermission()) {
             val locationManager = mContext.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager?
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
-            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, locationListener)
+            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, INTERVAL, DISTANCE, locationListener)
+            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, INTERVAL, DISTANCE, locationListener)
             mLastLocation = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             if (mLastLocation == null) {
                 mLastLocation = locationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
             }
-
             LocalBroadcastManager.getInstance(mContext)
                 .registerReceiver(mBroadcastReceiver, IntentFilter(SHOW_DISCRIPTION))
             if (mLastLocation != null) {
@@ -104,17 +93,7 @@ class Tab1Fragment() : Fragment(), Tab1View {
                 mTab1PresenterImpl.getLocationsByName()
             }
         }
-
-
-
         return view
-    }
-
-    private fun checkPermission(): Boolean {
-        return (ContextCompat.checkSelfPermission(
-            mContext,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED)
     }
 
     override fun onResume() {
@@ -123,12 +102,10 @@ class Tab1Fragment() : Fragment(), Tab1View {
         mTvInside = mView.tv_inside
         mView.tv_inside.text = mTab1PresenterImpl.getInsideLocation()
         arguments?.let {
-            if (it.containsKey(ARG_ITEM_ID)) {
-                tabletView = it.getBoolean(ARG_ITEM_ID)
+            if (it.containsKey(TABLET_VIEW)) {
+                tabletView = it.getBoolean(TABLET_VIEW)
             }
         }
-
-//        mTvInside.setText(mDescription)
         if (checkPermission()) {
             if (mLastLocation != null) {
                 mTab1PresenterImpl.getList(mLastLocation!!.latitude, mLastLocation!!.longitude)
@@ -138,26 +115,29 @@ class Tab1Fragment() : Fragment(), Tab1View {
         }
     }
 
-    override fun setListView(locationNames: ArrayList<Location>) {
+    override fun goToDetailFragment(id: Int, mContext: Context) {
+        val act = activity as MainActivity
+        act.setTabletView(id)
+    }
 
-        var stringlist = ArrayList<String>()
+    override fun setListView(locationNames: ArrayList<Location>) {
+        val stringList = ArrayList<String>()
 
         for (location in locationNames) {
-            stringlist.add(location.name)
+            stringList.add(location.name)
         }
         var locationAdapter: LocationAdapter? = null
         if (mLastLocation != null) {
             locationAdapter = LocationAdapter(
-                stringlist,
+                stringList,
                 context!!,
                 mTab1PresenterImpl,
                 locationNames,
                 LatLng(mLastLocation!!.latitude, mLastLocation!!.longitude),
-                tabletView!!
+                tabletView
             )
         }
-
-        mListView.setAdapter(locationAdapter)
+        mListView.adapter = locationAdapter
         mListView.setOnItemClickListener { parent, view, position, id ->
             mTab1PresenterImpl.goToDetailPage(locationNames[position].id)
         }
@@ -176,32 +156,29 @@ class Tab1Fragment() : Fragment(), Tab1View {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-
         inflater!!.inflate(R.menu.menu_main, menu)
 
         val sortNearby = menu!!.findItem(R.id.action_nearby)
-        val sortName = menu!!.findItem(R.id.action_name)
-        val sortAdded = menu!!.findItem(R.id.action_latest)
-        val searchItem = menu!!.findItem(R.id.action_search)
-        val settingsItem = menu!!.findItem(R.id.action_settings)
+        val sortName = menu.findItem(R.id.action_name)
+        val sortAdded = menu.findItem(R.id.action_latest)
+        val searchItem = menu.findItem(R.id.action_search)
+        val settingsItem = menu.findItem(R.id.action_settings)
+        val searchView = searchItem!!.actionView as android.support.v7.widget.SearchView
+
         if (!tabletView) {
             settingsItem.setVisible(false)
         }
-        var searchView = searchItem!!.actionView as android.support.v7.widget.SearchView
 
         searchView.setOnQueryTextListener(object : android.support.v7.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return true
             }
-
             override fun onQueryTextChange(newText: String?): Boolean {
                 mTab1PresenterImpl.changeList(newText!!)
                 return true
             }
-
         })
-
-        var act = activity as MainActivity
+        val act = activity as MainActivity
         act.addMenuItems(searchItem, settingsItem, sortNearby, sortName, sortAdded)
 
         super.onCreateOptionsMenu(menu, inflater)
@@ -221,27 +198,33 @@ class Tab1Fragment() : Fragment(), Tab1View {
             openSettings()
             return true
         }
-
         return super.onOptionsItemSelected(item)
     }
 
-    fun sortNearby() {
+    private fun checkPermission(): Boolean {
+        return (ContextCompat.checkSelfPermission(
+            mContext,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun sortNearby() {
         mTab1PresenterImpl.setSort(0)
         mTab1PresenterImpl.getDistancesList(mLastLocation!!.latitude, mLastLocation!!.longitude)
     }
 
-    fun sortLatest() {
+    private fun sortLatest() {
         mTab1PresenterImpl.setSort(1)
         mTab1PresenterImpl.getLocations()
     }
 
-    fun sortByName() {
+    private fun sortByName() {
         mTab1PresenterImpl.setSort(2)
         mTab1PresenterImpl.getLocationsByName()
     }
 
-    fun openSettings(){
-        var act = activity as MainActivity
+    private fun openSettings(){
+        val act = activity as MainActivity
         act.showSettings(id)
     }
 }
