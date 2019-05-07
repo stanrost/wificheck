@@ -8,8 +8,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import com.example.wificheck.Model.Entity.Location
-import com.example.wificheck.Presenter.Tab1PresenterImpl
+import com.example.wificheck.model.entity.Location
+import com.example.wificheck.presenter.fragment.Tab1PresenterImpl
 import com.example.wificheck.R
 import com.google.android.gms.maps.model.LatLng
 
@@ -19,49 +19,55 @@ class LocationAdapter(
     var context: Context,
     var mTab1PresenterImpl: Tab1PresenterImpl,
     var locations: ArrayList<Location>,
-    var latLng: LatLng
+    var latLng: LatLng?,
+    var tabletView :Boolean
 ) : ListAdapter {
 
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         var view = convertView
-
         if (view == null) {
             val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             view = inflater.inflate(R.layout.list_item_location, null)
         }
 
-        var tvItem = view!!.findViewById<TextView>(R.id.tv_item)
+        val tvItem = view!!.findViewById<TextView>(R.id.tv_item)
         tvItem.setText(list[position])
 
-        val item = view!!.findViewById<CardView>(R.id.list_item)
+        val item = view.findViewById<CardView>(R.id.list_item)
 
         item.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
-                mTab1PresenterImpl.goToDetailPage(locations[position].id)
+                if(tabletView){
+                    mTab1PresenterImpl.goToDetailFragment(locations[position].id)
+                }
+                else{
+                    mTab1PresenterImpl.goToDetailPage(locations[position].id)
+                }
+
+
             }
 
         })
 
-        val btnItem = view!!.findViewById<ImageButton>(R.id.btn_item)
+        val btnItem = view.findViewById<ImageButton>(R.id.btn_item)
         btnItem.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
                 showMenu(v!!, position)
-                //mTab1PresenterImpl.removeLocation(locations[position], latLng.latitude, latLng.longitude)
             }
         })
-        return view!!;
+        return view;
 
     }
 
     fun showMenu(view: View, position: Int) {
-        var popupMenu = PopupMenu(context, view)
+        val popupMenu = PopupMenu(context, view)
         popupMenu.inflate(R.menu.menu_item)
 
         popupMenu.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener {
             override fun onMenuItemClick(item: MenuItem?): Boolean {
                 if (item!!.itemId == R.id.menu_delete) {
-                    mTab1PresenterImpl.removeLocation(locations[position], latLng.latitude, latLng.longitude)
+                    mTab1PresenterImpl.removeLocation(locations[position], latLng!!.latitude, latLng!!.longitude)
                     return true
                 }
                 return false

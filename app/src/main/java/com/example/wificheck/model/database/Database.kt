@@ -1,4 +1,4 @@
-package com.example.wificheck.Model.Database
+package com.example.wificheck.model.database
 
 import android.provider.BaseColumns
 import android.provider.BaseColumns._ID

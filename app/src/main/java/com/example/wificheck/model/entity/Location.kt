@@ -1,4 +1,4 @@
-package com.example.wificheck.Model.Entity
+package com.example.wificheck.model.entity
 
 import java.io.Serializable
 

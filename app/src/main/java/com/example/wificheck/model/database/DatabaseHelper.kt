@@ -1,4 +1,4 @@
-package com.example.wificheck.Model.Database
+package com.example.wificheck.model.database
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
@@ -17,7 +17,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
 
     override fun onUpgrade(sqLiteDatabase: SQLiteDatabase, i: Int, i1: Int) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + Database.Location.LOC)
-
         onCreate(sqLiteDatabase)
     }
 

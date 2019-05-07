@@ -13,8 +13,8 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity;
 import android.widget.SeekBar
 import android.widget.Toast
-import com.example.wificheck.Model.Entity.Location
-import com.example.wificheck.Presenter.AddPresenterImpl
+import com.example.wificheck.model.entity.Location
+import com.example.wificheck.presenter.AddPresenterImpl
 import com.example.wificheck.R
 import com.example.wificheck.backgroundService.GeofenceTransitionsIntentService
 import com.example.wificheck.backgroundService.MyService
@@ -86,20 +86,12 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         mGeofencingClient = LocationServices.getGeofencingClient(this)
 
         fab.setOnClickListener { view ->
-            if (mLong != null && mLat != null) {
-                closeActivity()
-                val location = Location(etName.text.toString(), mLong!!, mLat!!, mRadius!!)
-                saveLocation(location)
-                addGeofence()
-            }
+                mAddPresenter.addLocation(etName.text.toString(), mLong, mLat, mRadius)
         }
 
-        // stop myservice when app is on
-        val serviceIntent = Intent(this, MyService::class.java)
-        this.stopService(serviceIntent)
     }
 
-    fun addCircle(radius: Double) {
+    override fun addCircle(radius: Double) {
 
         if (mGeoFenceLimits != null) {
             mGeoFenceLimits!!.remove()
@@ -113,12 +105,19 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
 
     }
 
-    fun closeActivity() {
-        finish()
+    override fun showError(error: String){
+        val builder = AlertDialog.Builder(this@AddActivity)
+        builder.setTitle("Fill in everything")
+        builder.setMessage(error)
+        builder.setPositiveButton(getString(R.string.ok)) { dialog, which ->
+            dialog.cancel()
+        }
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
     }
 
-    fun saveLocation(location: Location) {
-        mAddPresenter.addLocation(location)
+    override fun closeActivity() {
+        finish()
     }
 
     fun addMarker(latLng: LatLng) {
@@ -168,7 +167,7 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
         }
 
         mLocationMarker = mMap.addMarker(markerOptions)
-        val zoom = 18f
+        val zoom = 16f
         val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
         mMap.animateCamera(cameraUpdate)
 
@@ -186,13 +185,15 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0 * 0, 10f, mLocationListener)
             locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0 * 0, 10f, mLocationListener)
             val loc: android.location.Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            setCurrentLocationMarker(LatLng(loc!!.latitude, loc.longitude))
+           if (loc != null) {
+               setCurrentLocationMarker(LatLng(loc!!.latitude, loc.longitude))
+           }
         }
     }
 
     // mGeofence
 
-    fun addGeofence(){
+    override fun addGeofence(){
 
          mGeofence = Geofence.Builder().setRequestId(et_name.text.toString())
             .setCircularRegion(mLat!!, mLong!!, mRadius!!.toFloat())

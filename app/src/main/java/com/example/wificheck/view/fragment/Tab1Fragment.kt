@@ -13,22 +13,35 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AppCompatActivity
 import android.view.*
-import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
-import com.example.wificheck.Model.Entity.Location
-import com.example.wificheck.Presenter.Tab1PresenterImpl
 import com.example.wificheck.R
+import com.example.wificheck.model.entity.Location
+import com.example.wificheck.presenter.fragment.Tab1PresenterImpl
 import com.example.wificheck.view.DetailActivity
+import com.example.wificheck.view.MainActivity
 import com.example.wificheck.view.adapter.LocationAdapter
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.android.synthetic.main.tab1_list_fragment.view.*
 
-class Tab1Fragment : Fragment(), Tab1View {
+class Tab1Fragment() : Fragment(), Tab1View {
+    override fun goToDetailFragment(id: Int, mContext: Context) {
+        var act = activity as MainActivity
+        act.setTabletView(id)
+    }
 
     val DISCRIPTION = "DESCRIPTION"
     val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
     val ID = "ID"
+
+    companion object {
+        /**
+         * The fragment argument representing the item ID that this fragment
+         * represents.
+         */
+        const val ARG_ITEM_ID = "item_id"
+    }
+
 
     lateinit var mListView: ListView
     private lateinit var mTab1PresenterImpl: Tab1PresenterImpl
@@ -37,7 +50,8 @@ class Tab1Fragment : Fragment(), Tab1View {
     lateinit var mBroadcastReceiver: BroadcastReceiver
     lateinit var mTvInside: TextView
     private var mLastLocation: android.location.Location? = null
-    lateinit var mDescription : String
+    lateinit var mDescription: String
+    var tabletView: Boolean = false
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location?) {
@@ -57,11 +71,19 @@ class Tab1Fragment : Fragment(), Tab1View {
         mListView = view.lv_locations
         mTab1PresenterImpl = Tab1PresenterImpl(this, view.context)
         mTvInside = view.tv_inside
+        mTvInside.text = mTab1PresenterImpl.getInsideLocation()
         mBroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val description = intent!!.getSerializableExtra(DISCRIPTION) as String
+                mTab1PresenterImpl.setInsideLocation(description)
                 mDescription = description
-                mTvInside.setText(description)
+                mTvInside.text = description
+            }
+        }
+
+        arguments?.let {
+            if (it.containsKey(ARG_ITEM_ID)) {
+                tabletView = it.getBoolean(ARG_ITEM_ID)
             }
         }
 
@@ -70,16 +92,25 @@ class Tab1Fragment : Fragment(), Tab1View {
             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
             locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, locationListener)
             mLastLocation = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            if (mLastLocation == null) {
+                mLastLocation = locationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            }
+
+            LocalBroadcastManager.getInstance(mContext)
+                .registerReceiver(mBroadcastReceiver, IntentFilter(SHOW_DISCRIPTION))
+            if (mLastLocation != null) {
+                mTab1PresenterImpl.getList(mLastLocation!!.latitude, mLastLocation!!.longitude)
+            } else {
+                mTab1PresenterImpl.getLocationsByName()
+            }
         }
 
-        LocalBroadcastManager.getInstance(mContext)
-            .registerReceiver(mBroadcastReceiver, IntentFilter(SHOW_DISCRIPTION))
-        mTab1PresenterImpl.getList(mLastLocation!!.latitude, mLastLocation!!.longitude)
+
 
         return view
     }
 
-    fun checkPermission(): Boolean {
+    private fun checkPermission(): Boolean {
         return (ContextCompat.checkSelfPermission(
             mContext,
             android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -90,11 +121,21 @@ class Tab1Fragment : Fragment(), Tab1View {
         super.onResume()
         mListView = mView.lv_locations
         mTvInside = mView.tv_inside
+        mView.tv_inside.text = mTab1PresenterImpl.getInsideLocation()
+        arguments?.let {
+            if (it.containsKey(ARG_ITEM_ID)) {
+                tabletView = it.getBoolean(ARG_ITEM_ID)
+            }
+        }
 
 //        mTvInside.setText(mDescription)
-        mTab1PresenterImpl.getList(mLastLocation!!.latitude, mLastLocation!!.longitude)
-        LocalBroadcastManager.getInstance(mContext)
-            .registerReceiver(mBroadcastReceiver, IntentFilter(SHOW_DISCRIPTION));
+        if (checkPermission()) {
+            if (mLastLocation != null) {
+                mTab1PresenterImpl.getList(mLastLocation!!.latitude, mLastLocation!!.longitude)
+                LocalBroadcastManager.getInstance(mContext)
+                    .registerReceiver(mBroadcastReceiver, IntentFilter(SHOW_DISCRIPTION));
+            }
+        }
     }
 
     override fun setListView(locationNames: ArrayList<Location>) {
@@ -104,8 +145,17 @@ class Tab1Fragment : Fragment(), Tab1View {
         for (location in locationNames) {
             stringlist.add(location.name)
         }
-
-        val locationAdapter = LocationAdapter(stringlist, context!!, mTab1PresenterImpl, locationNames, LatLng(mLastLocation!!.latitude, mLastLocation!!.longitude))
+        var locationAdapter: LocationAdapter? = null
+        if (mLastLocation != null) {
+            locationAdapter = LocationAdapter(
+                stringlist,
+                context!!,
+                mTab1PresenterImpl,
+                locationNames,
+                LatLng(mLastLocation!!.latitude, mLastLocation!!.longitude),
+                tabletView!!
+            )
+        }
 
         mListView.setAdapter(locationAdapter)
         mListView.setOnItemClickListener { parent, view, position, id ->
@@ -129,14 +179,21 @@ class Tab1Fragment : Fragment(), Tab1View {
 
         inflater!!.inflate(R.menu.menu_main, menu)
 
+        val sortNearby = menu!!.findItem(R.id.action_nearby)
+        val sortName = menu!!.findItem(R.id.action_name)
+        val sortAdded = menu!!.findItem(R.id.action_latest)
         val searchItem = menu!!.findItem(R.id.action_search)
+        val settingsItem = menu!!.findItem(R.id.action_settings)
+        if (!tabletView) {
+            settingsItem.setVisible(false)
+        }
+        var searchView = searchItem!!.actionView as android.support.v7.widget.SearchView
 
-        var searchView = searchItem!!.getActionView() as android.support.v7.widget.SearchView
-
-        searchView.setOnQueryTextListener(object : android.support.v7.widget.SearchView.OnQueryTextListener{
+        searchView.setOnQueryTextListener(object : android.support.v7.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return true
             }
+
             override fun onQueryTextChange(newText: String?): Boolean {
                 mTab1PresenterImpl.changeList(newText!!)
                 return true
@@ -144,7 +201,10 @@ class Tab1Fragment : Fragment(), Tab1View {
 
         })
 
-            super.onCreateOptionsMenu(menu, inflater)
+        var act = activity as MainActivity
+        act.addMenuItems(searchItem, settingsItem, sortNearby, sortName, sortAdded)
+
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
@@ -157,7 +217,11 @@ class Tab1Fragment : Fragment(), Tab1View {
         } else if (item.itemId == R.id.action_latest) {
             sortLatest()
             return true
+        } else if (item.itemId == R.id.action_settings) {
+            openSettings()
+            return true
         }
+
         return super.onOptionsItemSelected(item)
     }
 
@@ -174,5 +238,10 @@ class Tab1Fragment : Fragment(), Tab1View {
     fun sortByName() {
         mTab1PresenterImpl.setSort(2)
         mTab1PresenterImpl.getLocationsByName()
+    }
+
+    fun openSettings(){
+        var act = activity as MainActivity
+        act.showSettings(id)
     }
 }

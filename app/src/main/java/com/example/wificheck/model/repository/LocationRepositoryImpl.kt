@@ -1,18 +1,19 @@
-package com.example.wificheck.Model.repository
+package com.example.wificheck.model.repository
 
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
-import com.example.wificheck.Model.Database.Database
-import com.example.wificheck.Model.Database.DatabaseHelper
-import com.example.wificheck.Model.Entity.Location
+import com.example.wificheck.model.database.Database
+import com.example.wificheck.model.database.DatabaseHelper
+import com.example.wificheck.model.entity.Location
 
 
-class LocationRepositoryImpl : LocationRepository {
+class LocationRepositoryImpl(var context: Context) : LocationRepository {
 
 
+    // samenvoegen van dphelper in constructor
     @SuppressLint("Recycle")
-    override fun getLocation(context: Context): ArrayList<Location> {
+    override fun getLocation(): ArrayList<Location> {
 
         val selectQuery = "SELECT * FROM LOCATION"
         val locations: ArrayList<Location> = ArrayList<Location>()
@@ -38,7 +39,7 @@ class LocationRepositoryImpl : LocationRepository {
     }
 
     @SuppressLint("Recycle")
-    override fun getLocationById(id: Int, context: Context): Location {
+    override fun getLocationById(id: Int): Location {
         val selectQuery = "SELECT * FROM LOCATION WHERE _ID = $id"
         val locations: ArrayList<Location> = ArrayList<Location>()
         val dbHelper = DatabaseHelper(context)
@@ -62,7 +63,7 @@ class LocationRepositoryImpl : LocationRepository {
         return locations[0]
     }
 
-    override fun addLocation(context: Context, location: Location) {
+    override fun addLocation(location: Location) {
         val values = ContentValues()
 
         val dbHelper = DatabaseHelper(context)
@@ -76,9 +77,21 @@ class LocationRepositoryImpl : LocationRepository {
         db.close()
     }
 
-    override fun removeLocation(context: Context, location: Location){
+    override fun removeLocation(location: Location){
         val dbHelper = DatabaseHelper(context)
         val db = dbHelper.readableDatabase
         db.delete(Database.Location.LOC, "_id = ${location.id}", null)
+    }
+
+    override fun updateLocation(location: Location) {
+        val dbHelper = DatabaseHelper(context)
+        val db = dbHelper.readableDatabase
+
+        val values = ContentValues()
+        values.put(Database.Location.LOC_NAME, location.name)
+        values.put(Database.Location.LOC_LONG, location.longitude)
+        values.put(Database.Location.LOC_RAD, location.radius)
+        values.put(Database.Location.LOC_LAT, location.latitude)
+        db.update(Database.Location.LOC, values,"_id = ${location.id}", null)
     }
 }

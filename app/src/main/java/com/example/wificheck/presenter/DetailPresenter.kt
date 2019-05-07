@@ -1,4 +1,4 @@
-package com.example.wificheck.Presenter
+package com.example.wificheck.presenter
 
 interface DetailPresenter{
 

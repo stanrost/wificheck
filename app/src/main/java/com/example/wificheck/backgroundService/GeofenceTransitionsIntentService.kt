@@ -9,18 +9,19 @@ import android.app.*
 import android.content.*
 import android.net.wifi.WifiManager
 import android.support.v4.content.LocalBroadcastManager
+import com.example.wificheck.model.repository.SharedPreferenceUpdateImpl
 import com.example.wificheck.R
 import com.example.wificheck.view.MainActivity
 
 
 class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsIntentService") {
 
-    val DISCRIPTION = "DESCRIPTION"
-    val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
-    val SHAREDPREFERENCES = "SharedPreferences"
-    val ACTIVE = "active"
+    private val DISCRIPTION = "DESCRIPTION"
+    private val SHOW_DISCRIPTION = "SHOW_DESCRIPTION"
+    private val SHAREDPREFERENCES = "SharedPreferences"
+    private val ACTIVE = "active"
 
-    internal lateinit var notificationManager: NotificationManager
+    private lateinit var notificationManager: NotificationManager
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, startId, startId)
@@ -38,17 +39,31 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
         val geofenceId = getFirstReminder(geofencingEvent.triggeringGeofences)
 
         // Test that the reported transition was of interest.
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-            openNotification(getString(R.string.inside_location) + geofenceId)
-            changeWifi(true)
-        } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
-            openNotification(getString(R.string.outside_location))
-            changeWifi(false)
+        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER && getEnteringCheck()) {
+            checkAutomaticOrNotificationSettings(getString(R.string.inside_location) + geofenceId, true)
+        } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT && getLeavingCheck()) {
+            checkAutomaticOrNotificationSettings("", false)
         } else {
-            // Log the error.
+
         }
     }
 
+    private fun checkAutomaticOrNotificationSettings(description : String, wifiChange : Boolean){
+        val checkId = SharedPreferenceUpdateImpl(applicationContext).getChecked()
+
+        when (checkId) {
+            0 -> {
+                openNotification(description)
+            }
+            1 -> {
+                changeWifi(wifiChange)
+            }
+            2 -> {
+                openNotification(description)
+                changeWifi(wifiChange)
+            }
+        }
+    }
 
     private fun getFirstReminder(triggeringGeofences: List<Geofence>): String? {
         val firstGeofence = triggeringGeofences[0]
@@ -56,14 +71,21 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
     }
 
 
-    fun checkIfRunning(): Boolean {
+    private fun checkIfRunning(): Boolean {
         val sp = getSharedPreferences(SHAREDPREFERENCES, Context.MODE_PRIVATE)
         val active = sp.getBoolean(ACTIVE, false)
 
         return active
     }
 
-    fun openNotification(description: String) {
+    private fun getEnteringCheck() : Boolean{
+        return SharedPreferenceUpdateImpl(applicationContext).getEnteringCheck()
+    }
+    private fun getLeavingCheck() : Boolean{
+        return SharedPreferenceUpdateImpl(applicationContext).getLeavingCheck()
+    }
+
+    private fun openNotification(description: String) {
 
         val wifiManager = this.getSystemService(Context.WIFI_SERVICE) as WifiManager
         wifiManager.isWifiEnabled = true
@@ -105,20 +127,14 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
             val intent = Intent(SHOW_DISCRIPTION)
             intent.putExtra(DISCRIPTION, description)
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-
-
         } else {
             val intent = Intent(SHOW_DISCRIPTION)
             intent.putExtra(DISCRIPTION, description)
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-
-
         }
     }
 
-
-
-    fun changeWifi(status : Boolean) {
+    private fun changeWifi(status : Boolean) {
         val wifiManager = this.getSystemService(Context.WIFI_SERVICE) as WifiManager
         wifiManager.isWifiEnabled = status
     }

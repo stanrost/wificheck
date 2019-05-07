@@ -1,6 +1,6 @@
 package com.example.wificheck.view.fragment
 
-import com.example.wificheck.Model.Entity.Location
+import com.example.wificheck.model.entity.Location
 
 interface Tab2View {
     fun setMarkers(locations: ArrayList<Location>)

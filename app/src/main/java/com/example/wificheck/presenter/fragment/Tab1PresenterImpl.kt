@@ -1,27 +1,31 @@
-package com.example.wificheck.Presenter
+package com.example.wificheck.presenter.fragment
 
 import android.content.Context
-import com.example.wificheck.Model.Entity.Location
-import com.example.wificheck.Model.service.LocationServiceImpl
-import com.example.wificheck.Model.service.SharedPreferenceServiceImpl
+import com.example.wificheck.model.entity.Location
+import com.example.wificheck.model.repository.LocationRepositoryImpl
+import com.example.wificheck.model.repository.SharedPreferenceUpdateImpl
 import com.example.wificheck.view.fragment.Tab1View
 import java.util.Collections.sort
-import kotlin.Comparator
-import kotlin.collections.ArrayList
 
-class Tab1PresenterImpl(var mView: Tab1View, var mContext: Context) : Tab1Presenter {
+class Tab1PresenterImpl(
+    var mView: Tab1View,
+    var mContext: Context,
+    var mLocationRepository: LocationRepositoryImpl = LocationRepositoryImpl(mContext),
+    var mSharedPreference: SharedPreferenceUpdateImpl = SharedPreferenceUpdateImpl(mContext)
+) :
+    Tab1Presenter {
 
     var mLocations = ArrayList<Location>()
 
     override fun getLocations() {
         mLocations.clear()
-        mLocations = LocationServiceImpl(mContext).getLocation()
+        mLocations = mLocationRepository.getLocation()
         mView.setListView(mLocations)
     }
 
     override fun getLocationsByName() {
         mLocations.clear()
-        mLocations = LocationServiceImpl(mContext).getLocation()
+        mLocations = mLocationRepository.getLocation()
 
         sort(mLocations, Comparator { o1: Location, o2: Location ->
             o1.name.compareTo(o2.name)
@@ -36,7 +40,7 @@ class Tab1PresenterImpl(var mView: Tab1View, var mContext: Context) : Tab1Presen
     override fun getDistancesList(lat: Double, long: Double) {
         val distances = ArrayList<Pair<Location, Double>>()
 
-        for (location in LocationServiceImpl(mContext).getLocation()) {
+        for (location in mLocationRepository.getLocation()) {
             val distance = distance(lat, long, location.latitude, location.longitude)
 
             distances.add(Pair(location, distance))
@@ -72,25 +76,24 @@ class Tab1PresenterImpl(var mView: Tab1View, var mContext: Context) : Tab1Presen
 
 
     override fun getList(lat: Double, long: Double) {
-        if (SharedPreferenceServiceImpl().getListOrder(mContext) == 0) {
+        if (SharedPreferenceUpdateImpl(mContext).getListOrder() == 0) {
             getDistancesList(lat, long)
-        } else if (SharedPreferenceServiceImpl().getListOrder(mContext) == 1) {
+        } else if (SharedPreferenceUpdateImpl(mContext).getListOrder() == 1) {
             getLocations()
-        } else if (SharedPreferenceServiceImpl().getListOrder(mContext) == 2) {
+        } else if (SharedPreferenceUpdateImpl(mContext).getListOrder() == 2) {
             getLocationsByName()
-        }
-        else{
+        } else {
             getLocationsByName()
         }
     }
 
     override fun setSort(sortId: Int) {
-        SharedPreferenceServiceImpl().setSort(sortId, mContext)
+        SharedPreferenceUpdateImpl(mContext).setSort(sortId)
     }
 
-    override fun changeList(text: String){
+    override fun changeList(text: String) {
 
-        var locations = mLocations.filter{
+        var locations = mLocations.filter {
             it.name.toUpperCase().contains(text.toUpperCase())
         } as ArrayList
 
@@ -98,8 +101,20 @@ class Tab1PresenterImpl(var mView: Tab1View, var mContext: Context) : Tab1Presen
     }
 
     override fun removeLocation(location: Location, lat: Double, long: Double) {
-        LocationServiceImpl(mContext).removeLocation(location)
+        mLocationRepository.removeLocation(location)
         getList(lat, long)
+    }
+
+    fun goToDetailFragment(id: Int) {
+        mView.goToDetailFragment(id, mContext)
+    }
+
+    override fun setInsideLocation(description: String) {
+        mSharedPreference.setInsideLocation(description)
+    }
+
+    override fun getInsideLocation(): String {
+        return mSharedPreference.getInsideLocation()
     }
 
 }

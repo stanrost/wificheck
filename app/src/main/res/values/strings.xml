@@ -6,6 +6,7 @@
     <string name="title_sort_nearby">Sort nearby</string>
     <string name="title_sort_name">Sort name</string>
     <string name="title_sort_latest">Sort added</string>
+    <string name="update">Update</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
@@ -23,6 +24,7 @@
     <string name="notificaiton_or_automated">Notification or changing wifi status automatically:</string>
     <string name="notification_radiobutton">Notification</string>
     <string name="turning_wifi_on_off_radiobutton">Turning wifi on/off</string>
+    <string name="both_radiobutton">Both</string>
     <string name="action">Action:</string>
     <string name="entering_wifilocation">Action when entering wifilocation:</string>
     <string name="leaving_wifilocation">Action when leaving wifilocation:</string>
@@ -45,7 +47,7 @@
 
     <!--SERVICE-->
     <string name="inside_location">You are inside wifilocation:</string>
-    <string name="outside_location">You ar outise a wifilocation</string>
+    <string name="outside_location">You ar outside a wifilocation</string>
     <string name="open">open</string>
     <string name="close">close</string>
 

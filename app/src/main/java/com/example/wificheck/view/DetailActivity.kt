@@ -1,5 +1,6 @@
 package com.example.wificheck.view
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -8,7 +9,9 @@ import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
-import com.example.wificheck.Presenter.DetailPresenterImpl
+import android.view.Menu
+import android.view.MenuItem
+import com.example.wificheck.presenter.DetailPresenterImpl
 import com.example.wificheck.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -25,12 +28,12 @@ class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
     private var mLocationRadius: Double? = null
     private var mLocationLatLng: LatLng? = null
 
-
     private var mLocationMarker: Marker? = null
     private var mCurrentLocationMarker: Marker? = null
     private var mLocationManager: LocationManager? = null
     private var mLastLocation: android.location.Location? = null
     var setCurrentMarker = false
+    private lateinit var mLocation: com.example.wificheck.model.entity.Location
 
     private val locationListener: LocationListener = object : LocationListener {
 
@@ -62,6 +65,16 @@ class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        mLocationId = intent.getSerializableExtra("ID") as Int
+        mMapsView = mv_location
+
+        DetailPresenterImpl(this).getLocationById(mLocationId!!)
+        mMapsView.getMapAsync(this)
+    }
+
     fun addCircle() {
         val circleOptions = CircleOptions()
             .center(mLocationMarker!!.getPosition())
@@ -80,6 +93,7 @@ class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
 
     override fun onMapReady(googleMap: GoogleMap?) {
         mMap = googleMap!!
+        mMap.clear()
         mLocationMarker = mMap.addMarker(MarkerOptions().position(mLocationLatLng!!))
         val zoom = 15f
         val cameraUpdate = CameraUpdateFactory.newLatLngZoom(mLocationLatLng!!, zoom)
@@ -124,5 +138,29 @@ class DetailActivity : AppCompatActivity(), OnMapReadyCallback, DetailView {
         }
         mCurrentLocationMarker = mMap.addMarker(markerOptions)
 
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        getMenuInflater().inflate(R.menu.menu_detail, menu);
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if (item.itemId == R.id.update){
+            openAddActivity()
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun openAddActivity(){
+        var intent = Intent(applicationContext, UpdateActivity::class.java)
+        intent.putExtra("mLocation", mLocation)
+        startActivity(intent)
+    }
+
+    override fun setLocation(location: com.example.wificheck.model.entity.Location) {
+        mLocation = location
     }
 }

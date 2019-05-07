@@ -1,6 +1,6 @@
-package com.example.wificheck.Presenter
+package com.example.wificheck.presenter.fragment
 
-import com.example.wificheck.Model.Entity.Location
+import com.example.wificheck.model.entity.Location
 
 interface Tab1Presenter{
 
@@ -12,4 +12,6 @@ interface Tab1Presenter{
     fun setSort(sortId: Int)
     fun changeList(text: String)
     fun removeLocation(location: Location, lat: Double, long: Double)
+    fun setInsideLocation(description: String)
+    fun getInsideLocation(): String
 }
