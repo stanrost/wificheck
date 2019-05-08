@@ -132,7 +132,7 @@ class AddActivity : AppCompatActivity(), AddView, OnMapReadyCallback {
             mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, INTERVAL, DISTANCE, mLocationListener)
             mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, INTERVAL, DISTANCE, mLocationListener)
             val loc: android.location.Location? = mLocationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            if (loc != null) {
+            if (loc != null && !mSetMarker) {
                 setCurrentLocationMarker(LatLng(loc.latitude, loc.longitude))
             }
         }
