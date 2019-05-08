@@ -124,11 +124,13 @@ class Tab2Fragment : Fragment(), OnMapReadyCallback, Tab2View {
 
     override fun noMarker() {
         val markerOptions = MarkerOptions()
-        val latLng = LatLng(mLastLocation!!.latitude, mLastLocation!!.longitude)
-        markerOptions.position(latLng)
-        markerOptions.title("" + latLng.latitude + " : " + latLng.longitude)
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_14)
-        mMap!!.animateCamera(cameraUpdate)
+        if (mLastLocation != null) {
+            val latLng = LatLng(mLastLocation!!.latitude, mLastLocation!!.longitude)
+            markerOptions.position(latLng)
+            markerOptions.title("" + latLng.latitude + " : " + latLng.longitude)
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_14)
+            mMap!!.animateCamera(cameraUpdate)
+        }
     }
 
     private fun checkPermission(): Boolean {

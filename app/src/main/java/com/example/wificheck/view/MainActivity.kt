@@ -40,6 +40,7 @@ import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.single.PermissionListener
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.tab1_list_fragment.*
 
 
 class MainActivity : AppCompatActivity(), MainView {
@@ -187,6 +188,12 @@ class MainActivity : AppCompatActivity(), MainView {
             }
     }
 
+    override fun removeGeofence(){
+        if (checkPermission()) {
+            geofencingClient.removeGeofences(geofencePendingIntent)?.run {}
+        }
+    }
+
     fun setTabletView(id: Int) {
         fragment2 = DetailFragment().apply {
             arguments = Bundle().apply {
@@ -307,6 +314,15 @@ class MainActivity : AppCompatActivity(), MainView {
     private fun goToSettings() {
         val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         startActivity(intent)
+    }
+
+    fun removeGeofenceByName(name: String) {
+        if (checkPermission()) {
+            val numbers: MutableList<String> = mutableListOf(name)
+            val list: List<String> = numbers
+            geofencingClient.removeGeofences(list)
+        }
+        tv_inside.text = ""
     }
 
 }

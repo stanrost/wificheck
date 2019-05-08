@@ -29,7 +29,7 @@ class Tab1PresenterImpl(
         mLocations = mLocationRepository.getLocation()
 
         sort(mLocations, Comparator { o1: Location, o2: Location ->
-            o1.name.compareTo(o2.name)
+            o1.name.toUpperCase().compareTo(o2.name.toUpperCase())
         })
         mView.setListView(mLocations)
     }
@@ -46,7 +46,6 @@ class Tab1PresenterImpl(
 
             distances.add(Pair(location, distance))
         }
-
         distances.sortBy { it.second }
         mLocations.clear()
 
@@ -54,7 +53,6 @@ class Tab1PresenterImpl(
             val (l1, d1) = p1
             mLocations.add(l1)
         }
-
         mView.setListView(mLocations)
     }
 
@@ -81,6 +79,7 @@ class Tab1PresenterImpl(
 
     override fun removeLocation(location: Location, lat: Double, long: Double) {
         mLocationRepository.removeLocation(location)
+        mView.removeGeofence(location.name)
         getList(lat, long)
     }
 

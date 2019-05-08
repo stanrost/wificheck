@@ -201,6 +201,11 @@ class Tab1Fragment() : Fragment(), Tab1View {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun removeGeofence(name:String){
+        val act = activity as MainActivity
+        act.removeGeofenceByName(name)
+    }
+
     private fun checkPermission(): Boolean {
         return (ContextCompat.checkSelfPermission(
             mContext,

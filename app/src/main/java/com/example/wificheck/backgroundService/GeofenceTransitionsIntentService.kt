@@ -40,9 +40,9 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
         val geofenceId = getFirstReminder(geofencingEvent.triggeringGeofences)
 
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER && getEnteringCheck()) {
-            checkAutomaticOrNotificationSettings(getString(R.string.inside_location) + geofenceId, true)
+            checkAutomaticOrNotificationSettings(getString(R.string.inside_location) +" $geofenceId", true)
         } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT && getLeavingCheck()) {
-            checkAutomaticOrNotificationSettings(getString(R.string.outside_location) + geofenceId,false)
+            checkAutomaticOrNotificationSettings(getString(R.string.outside_location) + " $geofenceId",false)
         } else {
 
         }

@@ -10,5 +10,6 @@ interface MainView {
     fun startGeofence(locations: ArrayList<Location>)
     fun tabletView()
     fun mobileView()
+    fun removeGeofence()
 
 }

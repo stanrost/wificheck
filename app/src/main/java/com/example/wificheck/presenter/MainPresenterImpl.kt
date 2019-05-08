@@ -29,6 +29,8 @@ class MainPresenterImpl(
         val location = locationRepository.getLocation()
         if (location.size > 0) {
             view.startGeofence(location)
+        }else {
+            view.removeGeofence()
         }
     }
 

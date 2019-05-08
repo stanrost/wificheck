@@ -44,10 +44,7 @@ class LocationAdapter(
                 else{
                     mTab1PresenterImpl.goToDetailPage(locations[position].id)
                 }
-
-
             }
-
         })
 
         val btnItem = view.findViewById<ImageButton>(R.id.btn_item)
@@ -57,7 +54,6 @@ class LocationAdapter(
             }
         })
         return view;
-
     }
 
     fun showMenu(view: View, position: Int) {
@@ -72,11 +68,9 @@ class LocationAdapter(
                 }
                 return false
             }
-
         })
         popupMenu.show()
     }
-
 
     override fun getItem(position: Int): Any {
         return list[position]
@@ -119,6 +113,4 @@ class LocationAdapter(
 
     override fun unregisterDataSetObserver(observer: DataSetObserver?) {
     }
-
-
 }

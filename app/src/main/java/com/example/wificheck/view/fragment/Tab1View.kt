@@ -8,4 +8,5 @@ interface Tab1View {
     fun setListView(locationNames: ArrayList<Location>)
     fun goToDetailPage(id: Int, context: Context)
     fun goToDetailFragment(id: Int, mContext: Context)
+    fun removeGeofence(name:String)
 }

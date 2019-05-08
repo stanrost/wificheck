@@ -40,7 +40,7 @@
 
     <!--SERVICE-->
     <string name="inside_location">You are inside wifilocation:</string>
-    <string name="outside_location">You ar outside a wifilocation</string>
+    <string name="outside_location">You ar outside a wifilocation:</string>
 
     <string name="wifi_checker_checking">Wifi Checker is checking</string>
     <string name="open">open</string>
