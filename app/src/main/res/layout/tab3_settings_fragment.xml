@@ -3,7 +3,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FAFAFA"
+        android:background="@color/colorBackGround"
         android:orientation="vertical">
 
     <LinearLayout
@@ -17,7 +17,7 @@
                 android:layout_height="match_parent"
                 android:text="@string/notificaiton_or_automated"
                 android:textSize="@dimen/text_title_settings"
-                android:textColor="#000000"/>
+                android:textColor="@color/colorTextBlack"/>
 
         <RadioGroup
                 android:id="@+id/rg_notification"
@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/action"
                 android:textSize="@dimen/text_title_settings"
-                android:textColor="#000000"/>
+                android:textColor="@color/colorTextBlack"/>
 
         <LinearLayout
                 android:layout_width="match_parent"
@@ -68,7 +68,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/entering_wifilocation"
-                    android:textColor="#000000"
+                    android:textColor="@color/colorTextBlack"
                     android:layout_weight="2"/>
             <Switch
                     android:id="@+id/s_entering"
@@ -87,7 +87,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/leaving_wifilocation"
-                    android:textColor="#000000"
+                    android:textColor="@color/colorTextBlack"
                     android:layout_weight="2"/>
             <Switch
                     android:id="@+id/s_leaving"
@@ -113,7 +113,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/notification"
                 android:textSize="@dimen/text_title_settings"
-                android:textColor="#000000"/>
+                android:textColor="@color/colorTextBlack"/>
 
         <LinearLayout
                 android:layout_width="match_parent"
@@ -124,7 +124,7 @@
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#000000"
+                    android:textColor="@color/colorTextBlack"
                     android:text="@string/vibrate"
                     android:layout_weight="2"/>
             <Switch
@@ -143,7 +143,7 @@
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#000000"
+                    android:textColor="@color/colorTextBlack"
                     android:text="@string/notification_indicator_light"
                     android:layout_weight="2"/>
             <Switch

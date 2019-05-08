@@ -7,4 +7,8 @@
     <dimen name="margin_block_settings">16dp</dimen>
     <dimen name="margin_sentence_settings">8dp</dimen>
     <dimen name="text_title_settings">18sp</dimen>
+
+    <dimen name="text_16">16sp</dimen>
+    <dimen name="size_16">16dp</dimen>
+
 </resources>
