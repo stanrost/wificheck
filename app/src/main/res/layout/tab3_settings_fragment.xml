@@ -6,7 +6,6 @@
         android:background="#FAFAFA"
         android:orientation="vertical">
 
-
     <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -101,7 +100,6 @@
     <View
             android:id="@+id/v_notification"
             style="@style/Divider"/>
-
 
     <LinearLayout
             android:id="@+id/ll_notification"

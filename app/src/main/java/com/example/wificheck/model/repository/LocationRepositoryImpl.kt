@@ -33,6 +33,7 @@ class LocationRepositoryImpl(var context: Context) : LocationRepository {
             locations.add(location)
             cursor.moveToNext()
         }
+        db.close()
         return locations
     }
 
@@ -58,6 +59,7 @@ class LocationRepositoryImpl(var context: Context) : LocationRepository {
             locations.add(location)
             cursor.moveToNext()
         }
+        db.close()
         return locations[0]
     }
 
@@ -79,6 +81,7 @@ class LocationRepositoryImpl(var context: Context) : LocationRepository {
         val dbHelper = DatabaseHelper(context)
         val db = dbHelper.readableDatabase
         db.delete(Database.Location.LOC, "_id = ${location.id}", null)
+        db.close()
     }
 
     override fun updateLocation(location: Location) {
@@ -91,5 +94,6 @@ class LocationRepositoryImpl(var context: Context) : LocationRepository {
         values.put(Database.Location.LOC_RAD, location.radius)
         values.put(Database.Location.LOC_LAT, location.latitude)
         db.update(Database.Location.LOC, values,"_id = ${location.id}", null)
+        db.close()
     }
 }

@@ -37,6 +37,7 @@
 
     <!-- Detail -->
     <string name="current_location">Current location</string>
+    <string name="name_detail">Name:</string>
 
     <!--SETTINGS_POPUP -->
     <string name="change_settings">Change Settings</string>
@@ -58,4 +59,9 @@
     <string name="add_marker_error">Add a marker</string>
     <string name="add_name_error">Fill in name</string>
     <string name="add_radius_error">Add a radius</string>
+
+    <!--ADD/UPDATE-->
+    <string name="name">Name:</string>
+    <string name="radius">Radius:</string>
+    <string name="maps">Maps:</string>
 </resources>

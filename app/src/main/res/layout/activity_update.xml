@@ -7,7 +7,6 @@
         android:layout_height="match_parent"
         tools:context=".view.AddActivity">
 
-
     <LinearLayout
             android:layout_height="match_parent"
             android:layout_width="match_parent"
@@ -15,7 +14,7 @@
             android:layout_margin="@dimen/margin_block_settings">
 
         <TextView
-                android:text="Name:"
+                android:text="@string/name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/tv_name"/>
         <EditText
@@ -23,7 +22,7 @@
                 android:layout_marginTop="@dimen/margin_sentence_settings"
                 android:layout_height="wrap_content" android:id="@+id/et_name"/>
         <TextView
-                android:text="Radius"
+                android:text="@string/radius"
                 android:layout_width="match_parent"
                 android:layout_marginTop="@dimen/margin_sentence_settings"
                 android:layout_height="wrap_content" android:id="@+id/tv_radius"/>
@@ -33,7 +32,7 @@
                 android:layout_height="wrap_content" android:id="@+id/sb_radius"/>
 
         <TextView
-                android:text="Maps:"
+                android:text="@string/maps"
                 android:layout_width="match_parent"
                 android:layout_marginTop="@dimen/margin_sentence_settings"
                 android:layout_height="wrap_content" android:id="@+id/tv_location"/>
@@ -44,6 +43,7 @@
                 android:layout_height="wrap_content" android:id="@+id/mv_location"/>
 
     </LinearLayout>
+
     <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
