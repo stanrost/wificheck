@@ -3,7 +3,6 @@ package com.example.wificheck.view
 import android.Manifest
 import android.app.AlertDialog
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -11,24 +10,24 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.support.design.widget.TabLayout
-import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import com.example.wificheck.R
+import com.example.wificheck.backgroundService.GeofenceTransitionsIntentService
+import com.example.wificheck.backgroundService.MyService
 import com.example.wificheck.model.entity.Location
 import com.example.wificheck.presenter.MainPresenterImpl
-import com.example.wificheck.R
+import com.example.wificheck.view.adapter.SectionsPageAdapter
+import com.example.wificheck.view.fragment.DetailFragment
 import com.example.wificheck.view.fragment.Tab1Fragment
 import com.example.wificheck.view.fragment.Tab2Fragment
 import com.example.wificheck.view.fragment.Tab3Fragment
-import com.example.wificheck.backgroundService.GeofenceTransitionsIntentService
-import com.example.wificheck.backgroundService.MyService
-import com.example.wificheck.view.adapter.SectionsPageAdapter
-import com.example.wificheck.view.fragment.DetailFragment
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
@@ -56,18 +55,20 @@ class MainActivity : AppCompatActivity(), MainView {
 
     // Geofence
     lateinit var geofencingClient: GeofencingClient
-    var geofenceList: ArrayList<Geofence> = ArrayList()
+    private var geofenceList: ArrayList<Geofence> = ArrayList()
     lateinit var mainView: View
 
     //tabletview
-    lateinit var fragment1:Fragment
-    lateinit var fragment2:Fragment
+    lateinit var fragment1: Fragment
+    lateinit var fragment2: Fragment
 
-    lateinit var menuSetting : MenuItem
-    lateinit var menuSearch : MenuItem
-    lateinit var menuNearby : MenuItem
-    lateinit var menuName : MenuItem
-    lateinit var menuAdded : MenuItem
+    lateinit var menuSetting: MenuItem
+    lateinit var menuSearch: MenuItem
+    lateinit var menuNearby: MenuItem
+    lateinit var menuName: MenuItem
+    lateinit var menuAdded: MenuItem
+
+    private var mDenied = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,11 +111,12 @@ class MainActivity : AppCompatActivity(), MainView {
         mainPresenter.setInsideLocation("")
         val intent = Intent(this, MyService::class.java)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        }
-        else{
-            startService(intent)
+        if (!mDenied) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
         }
     }
 
@@ -147,8 +149,10 @@ class MainActivity : AppCompatActivity(), MainView {
         mViewPager!!.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {
             }
+
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
             }
+
             override fun onPageSelected(position: Int) {
                 mainPresenter.hideOrShowFloatingActionButton(position)
 
@@ -168,27 +172,27 @@ class MainActivity : AppCompatActivity(), MainView {
     }
 
     override fun startGeofence(locations: ArrayList<Location>) {
-            for (location in locations) {
-                val geofence = Geofence.Builder().setRequestId(location.name)
-                    .setCircularRegion(location.latitude, location.longitude, location.radius.toFloat())
-                    .setRequestId(location.name)
-                    .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT).build()
-                geofenceList.add(geofence)
-            }
-            if (checkPermission()) {
-                geofencingClient.removeGeofences(geofencePendingIntent)?.run {}
-                geofencingClient.addGeofences(getGeofencingRequest(), geofencePendingIntent)?.run {
-                    addOnSuccessListener {
-                    }
-                    addOnFailureListener {
-                        showSettingsPopUp()
-                    }
+        for (location in locations) {
+            val geofence = Geofence.Builder().setRequestId(location.name)
+                .setCircularRegion(location.latitude, location.longitude, location.radius.toFloat())
+                .setRequestId(location.name)
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT).build()
+            geofenceList.add(geofence)
+        }
+        if (checkPermission()) {
+            geofencingClient.removeGeofences(geofencePendingIntent)?.run {}
+            geofencingClient.addGeofences(getGeofencingRequest(), geofencePendingIntent)?.run {
+                addOnSuccessListener {
+                }
+                addOnFailureListener {
+                    showSettingsPopUp()
                 }
             }
+        }
     }
 
-    override fun removeGeofence(){
+    override fun removeGeofence() {
         if (checkPermission()) {
             geofencingClient.removeGeofences(geofencePendingIntent)?.run {}
         }
@@ -228,10 +232,9 @@ class MainActivity : AppCompatActivity(), MainView {
 
     override fun onBackPressed() {
         val count = supportFragmentManager.backStackEntryCount
-        if(count == 0) {
+        if (count == 0) {
             super.onBackPressed()
-        }
-        else{
+        } else {
             getSupportFragmentManager().popBackStack()
             fab.show()
             menuSetting.isVisible = true
@@ -242,7 +245,13 @@ class MainActivity : AppCompatActivity(), MainView {
         }
     }
 
-    fun addMenuItems(searchItem: MenuItem?, settingsItem: MenuItem?, sortNearby: MenuItem?, sortName: MenuItem?, sortAdded: MenuItem?) {
+    fun addMenuItems(
+        searchItem: MenuItem?,
+        settingsItem: MenuItem?,
+        sortNearby: MenuItem?,
+        sortName: MenuItem?,
+        sortAdded: MenuItem?
+    ) {
         menuSearch = searchItem!!
         menuSetting = settingsItem!!
         menuNearby = sortNearby!!
@@ -260,6 +269,8 @@ class MainActivity : AppCompatActivity(), MainView {
                 override fun onPermissionDenied(response: PermissionDeniedResponse) {
                     if (response.isPermanentlyDenied) {
                     }
+                    mDenied = true
+
                     finish()
                 }
 
